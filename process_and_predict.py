@@ -165,7 +165,7 @@ df_otlk['doy'] = get_doy(df_otlk)
 
 # HREF feature processing
 if isTest:
-    ct_files = glob.glob(f'{href_path.as_posix()}/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/spc_post.t00z.hrefct.1hr.f*')
+    ct_files = glob.glob(f'{href_path.as_posix()}/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t00z.hrefct.1hr.f*')
 else:
     ct_files = glob.glob(f'/nfsops/ops_users/nadata2/awips2/grib2/spcpost/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t00z.hrefct.1hr.f*')
 
@@ -256,7 +256,10 @@ if haz_type == 'hail':
         rel_freq_hail[wfo_state_2d == area] = hail_pred
 
     hail_cov_norm = 100*hail_cov / hail_cov.max()
-    rel_freq_hail_norm = 100*rel_freq_hail / rel_freq_hail.max()
+    if rel_freq_hail.max() == 0:
+        rel_freq_hail_norm = rel_freq_hail
+    else:
+        rel_freq_hail_norm = 100*rel_freq_hail / rel_freq_hail.max()
 
     hail_weight = hail_cov_norm + rel_freq_hail_norm
     hail_weight[hail_cov_norm == 0] = 0
@@ -329,7 +332,10 @@ elif haz_type == 'wind':
         rel_freq_wind[wfo_state_2d == area] = wind_pred
 
     wind_cov_norm = 100*wind_cov / wind_cov.max()
-    rel_freq_wind_norm = 100*rel_freq_wind / rel_freq_wind.max()
+    if rel_freq_wind.max() == 0:
+        rel_freq_wind_norm = rel_freq_wind
+    else:
+        rel_freq_wind_norm = 100*rel_freq_wind / rel_freq_wind.max()
 
     wind_weight = wind_cov_norm + rel_freq_wind_norm
     wind_weight[wind_cov_norm == 0] = 0
