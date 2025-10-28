@@ -48,8 +48,8 @@ def make_images(affected, affected_df, otlk_ts, outdir, haz_type, level='nationa
     fig.suptitle(f'Report Count Predictions ({haz_type}) - {affected} - Outlook {otlk_ts}',ha='left',x=0,weight='bold',size=10)
 
     # Make axes
-    ax1 = fig.add_subplot(gs[:4,:])
-    ax2 = fig.add_subplot(gs[4:,:])
+    ax1 = fig.add_subplot(gs[4:,:])
+    ax2 = fig.add_subplot(gs[:4,:])
 
     kw = dict(horizontalalignment="center",
             verticalalignment="center",

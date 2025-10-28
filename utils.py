@@ -287,7 +287,7 @@ def find_dist(val,haz,size):
     else:
         dist2use = dists_final[haz][size]['>99']
 
-    return dist2use.rvs(fv.nsims).astype(int)
+    return np.round(dist2use.rvs(fv.nsims)).astype(int)
 
 
 dists_final = {

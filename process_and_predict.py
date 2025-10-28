@@ -69,7 +69,7 @@ day = int(otlk_ts[6:8])
 valid_hr = int(ndfd_file.as_posix().split('_')[-2][:2])
 otlkdt = dt.datetime(year, month, day, valid_hr)
 
-outdir = pathlib.Path(out_path,'dates',otlk_ts).resolve()
+outdir = pathlib.Path(out_path,'dates',otlk_ts,'lsr').resolve()
 outdir.mkdir(exist_ok=True)
 
 with np.load(impacts_grids_file) as NPZ:
