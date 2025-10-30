@@ -126,6 +126,12 @@ def make_images(affected, affected_df, otlk_ts, outdir, haz_type, level='nationa
     ax2.plot([box_list_counts[1]['whishi'],np.max(countsup[1])], [1.5,1.5], color='k', linestyle='dashed', linewidth=0.25)    
     ax2.text(int(np.max(countsup[1])),1.5,f'{int(np.max(countsup[1]))}',ha='left',va='center',fontsize=7)
 
+    ### **** plotting and text for min on wind counts ***
+    ax2.plot([box_list_counts[0]['whislo'],np.min(countsup[0])], [0.5,0.5], color='k', linestyle='dashed', linewidth=0.25)
+    ax2.text(int(np.min(countsup[0])),0.5,f'{int(np.min(countsup[0]))}',ha='right',va='center',fontsize=7)
+    ax2.plot([box_list_counts[1]['whislo'],np.min(countsup[1])], [1.5,1.5], color='k', linestyle='dashed', linewidth=0.25)    
+    ax2.text(int(np.min(countsup[1])),1.5,f'{int(np.min(countsup[1]))}',ha='right',va='center',fontsize=7)
+
     box_counts = ax2.bxp(box_list_counts,vert=False,showfliers=False, positions=[0.5,1.5],
                 widths=0.15,showcaps=False,patch_artist=True,
                 whiskerprops=dict(alpha=0))
@@ -151,7 +157,7 @@ def make_images(affected, affected_df, otlk_ts, outdir, haz_type, level='nationa
 
     ax2.spines[:].set_visible(False)
     ax2.set_yticks([0.5,1.5])
-    ax2.tick_params(labelsize=10,length=0,axis='y')
+    ax2.tick_params(labelsize=10,length=0,pad=10,axis='y')
     ax2.tick_params(labelsize=8,axis='x')
     ax2.set_xscale('symlog')
     ax2.set_xlim([0,600])
