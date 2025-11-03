@@ -126,12 +126,6 @@ def make_images(affected, affected_df, otlk_ts, outdir, haz_type, level='nationa
     ax2.plot([box_list_counts[1]['whishi'],np.max(countsup[1])], [1.5,1.5], color='k', linestyle='dashed', linewidth=0.25)    
     ax2.text(int(np.max(countsup[1])),1.5,f'{int(np.max(countsup[1]))}',ha='left',va='center',fontsize=7)
 
-    ### **** plotting and text for min on wind counts ***
-    ax2.plot([box_list_counts[0]['whislo'],np.min(countsup[0])], [0.5,0.5], color='k', linestyle='dashed', linewidth=0.25)
-    ax2.text(int(np.min(countsup[0])),0.5,f'{int(np.min(countsup[0]))}',ha='right',va='center',fontsize=7)
-    ax2.plot([box_list_counts[1]['whislo'],np.min(countsup[1])], [1.5,1.5], color='k', linestyle='dashed', linewidth=0.25)    
-    ax2.text(int(np.min(countsup[1])),1.5,f'{int(np.min(countsup[1]))}',ha='right',va='center',fontsize=7)
-
     box_counts = ax2.bxp(box_list_counts,vert=False,showfliers=False, positions=[0.5,1.5],
                 widths=0.15,showcaps=False,patch_artist=True,
                 whiskerprops=dict(alpha=0))
@@ -143,17 +137,19 @@ def make_images(affected, affected_df, otlk_ts, outdir, haz_type, level='nationa
         else:
             whisker.set_alpha(0.4)
 
-    ### **** text for medians on wind counts ***
+    ### **** text for medians on counts ***
     for idx,median in enumerate(box_counts['medians']):
         text = median.get_xdata()[0]
         ax2.text(int(text),idx+0.65,f'{int(text)}',ha='center',fontsize=9)
 
-    ### **** text for 95% on wind counts ***
+    ### **** text for 5/95% on counts ***
     for idx,worst in enumerate(box_counts['whiskers']):
         text = worst.get_xdata()[1]
         worst_x_off = int(text) / 5
         if idx % 2 == 1:
             ax2.text(int(text),int(idx/2)+0.55,f'{int(text)}',ha='left',va='center',fontsize=7)
+        else:
+            ax2.text(int(text),int(idx/2)+0.55,f'{int(text)}',ha='right',va='center',fontsize=7)
 
     ax2.spines[:].set_visible(False)
     ax2.set_yticks([0.5,1.5])
