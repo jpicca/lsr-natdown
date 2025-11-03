@@ -46,6 +46,10 @@ isTest = bool(args.test)
 impacts_grids_file = f'{data_path}/impact-grids-5km.npz'
 cwa_file = f'{data_path}/cwas.npz'
 
+# Bias files
+bias_wind_file = f'{data_path}/wind_bias_table.csv'
+bias_hail_file = f'{data_path}/hail_bias_table.csv'
+
 # ML models
 with open(f'{ml_path.as_posix()}/wfo-label-encoder.model','rb') as f:
     wfo_label_encoder = pickle.load(f)
@@ -90,6 +94,9 @@ with np.load(cwa_file) as NPZ:
 
 map_func = np.vectorize(lambda x: fv.fipsToState.get(x, '0'))
 wfo_state_2d = np.char.add(wfo.astype('str'),map_func(state))
+
+bias_wind_df = pd.read_csv(bias_wind_file)
+bias_hail_df = pd.read_csv(bias_hail_file)
 
 ### Outlook feature processing
 # Read grib file
@@ -224,6 +231,12 @@ Xhail = X[fv.col_names_hail]
 
 mask = np.char.find(wfo_state_2d, '0') != -1
 
+## Make bias correction dataframe
+regions = df_all.wfo_st_list.str[:3].apply(lambda x: u.find_region(x))
+seasons = df_all.otlk_timestamp.str[4:6].astype(int).apply(lambda x: u.find_season(x,temp=True))
+
+df_bias = pd.DataFrame({'region': regions, 'season': seasons})
+
 if haz_type == 'hail':
     if hail_cov.max() == 0:
         print(f'All hail coverage probabilities less than 5%. No hail predictions made for {otlk_ts}.')
@@ -237,6 +250,15 @@ if haz_type == 'hail':
         'wfost': df_all.wfo_st_list,
         'hail': hail_preds
     })
+
+    # Incorporate bias correction
+    df_bias['magnitude_bin'] = df_preds.hail.apply(lambda x: u.return_mag_bin(x))
+    df_bias['threat_level'] = df_all.maxhail/100
+
+    bias_calc = df_bias.merge(bias_hail_df, on=['season', 'region', 'threat_level', 'magnitude_bin'], how='left')
+    bias_calc.fillna(0, inplace=True)
+
+    df_preds['hail'] = df_preds['hail'] - bias_calc['median_bias'].values
 
     nat_preds = df_preds[['hail']].sum()
     nat_hail_dist = u.add_distribution(nat_preds, haz='hail')
@@ -313,6 +335,15 @@ elif haz_type == 'wind':
         'wfost': df_all.wfo_st_list,
         'wind': wind_preds
     })
+
+    # Incorporate bias correction
+    df_bias['magnitude_bin'] = df_preds.wind.apply(lambda x: u.return_mag_bin(x))
+    df_bias['threat_level'] = df_all.maxwind/100
+
+    bias_calc = df_bias.merge(bias_wind_df, on=['season', 'region', 'threat_level', 'magnitude_bin'], how='left')
+    bias_calc.fillna(0, inplace=True)
+
+    df_preds['wind'] = df_preds['wind'] - bias_calc['median_bias'].values
 
     nat_preds = df_preds[['wind']].sum()
     nat_wind_dist = u.add_distribution(nat_preds, haz='wind')

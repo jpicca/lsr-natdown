@@ -336,92 +336,117 @@ def add_distribution(df,haz='hail'):
 
     return dist.astype(int)
 
+def find_region(wfo):
+    if wfo in ["EKA", "LOX", "STO", "SGX", "MTR", "HNX","MFR", "PDT", "PQR","SEW", "OTX","REV", "VEF", "LKN","PSR", "TWC", "FGZ",
+                "SLC","BOI", "PIH","MSO","TFX","RIW","GJT","EPZ"]:
+        region = 'west'
+    elif wfo in ["BOU", "PUB","CYS","BYZ", "GGW","BIS","ABR", "UNR","LBF", "GID","GLD", "DDC","AMA", "LUB", "MAF","ABQ"]:
+        region = 'highplains'
+    elif wfo in ["OUN", "TSA","ICT","FWD", "SJT", "EWX"]:
+        region = 'plains'
+    elif wfo in ["FSD","DLH", "MPX", "FGF","OAX","DMX", "DVN","TOP", "EAX", "SGF", "LSX","LOT", "ILX","IND", "IWX",
+                "DTX", "APX", "GRR", "MQT","GRB", "ARX", "MKX"]:
+        region = 'midwest'
+    elif wfo in ["BMX", "HUN", "MOB","JAN","FFC","CHS", "CAE", "GSP","JAX", "KEY", "MLB", "MFL", "TAE", "TBW","MEG", "MRX", "OHX",
+                "LMK", "JKL", "PAH","LCH", "LIX", "SHV","LZK","HGX", "CRP", "BRO"]:
+        region = 'southeast'
+    elif wfo in ["PHI","PBZ", "CTP","RLX","LWX", "RNK", "AKQ","MHX", "RAH", "ILM","CLE", "ILN","CAR", "GYX","BOX",
+                "ALY", "BGM", "BUF", "OKX","BTV"]:
+        region = 'northeast'
+    else:
+        region = 'other'
+    
+    return region
+
+def find_season(month,temp=False):
+
+    if temp:
+        if month in [10,11,12,1,2,3,4]:
+            season = 'cool'
+        else:
+            season = 'warm'
+    else:
+        if month in [12,1,2]:
+            season = 'winter'
+        elif month in [3,4,5]:
+            season = 'spring'
+        elif month in [6,7,8]:
+            season = 'summer'
+        elif month in [9,10,11]:
+            season = 'fall'
+
+    return season
+
+def return_mag_bin(pred):
+    if pred < 5:
+        return str(int(pred))
+    else:
+        return '>4'
+    
+
 def return_mag(lev,month,wfo,hazard):
     if lev == 0:
-        if month in [12,1,2]:
-            season = 'Winter'
-        elif month in [3,4,5]:
-            season = 'Spring'
-        elif month in [6,7,8]:
-            season = 'Summer'
-        elif month in [9,10,11]:
-            season = 'Fall'
+
+        season = find_season(month)
     
-        if wfo in ["EKA", "LOX", "STO", "SGX", "MTR", "HNX","MFR", "PDT", "PQR","SEW", "OTX","REV", "VEF", "LKN","PSR", "TWC", "FGZ",
-                    "SLC","BOI", "PIH","MSO","TFX","RIW","GJT","EPZ"]:
-            region = 'West'
-        elif wfo in ["BOU", "PUB","CYS","BYZ", "GGW","BIS","ABR", "UNR","LBF", "GID","GLD", "DDC","AMA", "LUB", "MAF","ABQ"]:
-            region = 'High Plains'
-        elif wfo in ["OUN", "TSA","ICT","FWD", "SJT", "EWX"]:
-            region = 'Plains'
-        elif wfo in ["FSD","DLH", "MPX", "FGF","OAX","DMX", "DVN","TOP", "EAX", "SGF", "LSX","LOT", "ILX","IND", "IWX",
-                    "DTX", "APX", "GRR", "MQT","GRB", "ARX", "MKX"]:
-            region = 'Midwest'
-        elif wfo in ["BMX", "HUN", "MOB","JAN","FFC","CHS", "CAE", "GSP","JAX", "KEY", "MLB", "MFL", "TAE", "TBW","MEG", "MRX", "OHX",
-                    "LMK", "JKL", "PAH","LCH", "LIX", "SHV","LZK","HGX", "CRP", "BRO"]:
-            region = 'Southeast'
-        elif wfo in ["PHI","PBZ", "CTP","RLX","LWX", "RNK", "AKQ","MHX", "RAH", "ILM","CLE", "ILN","CAR", "GYX","BOX",
-                    "ALY", "BGM", "BUF", "OKX","BTV"]:
-            region = 'Northeast'
-        else:
-            region = 'Other'
+        region = find_region(wfo)
     
-        proportions = {'wind': {'West': {'Winter': 0.09523809523809523,
-                        'Spring': 0.032490974729241874,
-                        'Summer': 0.049143708116157855,
-                        'Fall': 0.07954545454545454},
-                        'High Plains': {'Winter': 0.0392156862745098,
-                        'Spring': 0.160075329566855,
-                        'Summer': 0.1625668449197861,
-                        'Fall': 0.15789473684210525},
-                        'Plains': {'Winter': 0.12017167381974249,
-                        'Spring': 0.1680933852140078,
-                        'Summer': 0.16076447442383363,
-                        'Fall': 0.14008941877794337},
-                        'Midwest': {'Winter': 0.16909620991253643,
-                        'Spring': 0.09427860696517414,
-                        'Summer': 0.08757637474541752,
-                        'Fall': 0.0836092715231788},
-                        'Southeast': {'Winter': 0.056451612903225805,
-                        'Spring': 0.05987093690248566,
-                        'Summer': 0.03495624425856984,
-                        'Fall': 0.037642397226349676},
-                        'Northeast': {'Winter': 0.013916500994035786,
-                        'Spring': 0.016916780354706683,
-                        'Summer': 0.019506098022877054,
-                        'Fall': 0.0076481835564053535},
-                        'Other': {'Winter': 0.082,
-                        'Spring': 0.0886,
-                        'Summer': 0.085,
-                        'Fall': 0.084}},
-                        'hail': {'West': {'Winter': 0.0,
-                        'Spring': 0.0,
-                        'Summer': 0.036036036036036036,
-                        'Fall': 0.030534351145038167},
-                        'High Plains': {'Winter': 0.06557377049180328,
-                        'Spring': 0.07942583732057416,
-                        'Summer': 0.10298507462686567,
-                        'Fall': 0.04953560371517028},
-                        'Plains': {'Winter': 0.0410958904109589,
-                        'Spring': 0.07186678352322524,
-                        'Summer': 0.10559006211180125,
-                        'Fall': 0.07168458781362007},
-                        'Midwest': {'Winter': 0.045146726862302484,
-                        'Spring': 0.04868603042876902,
-                        'Summer': 0.09302325581395349,
-                        'Fall': 0.07397003745318352},
-                        'Southeast': {'Winter': 0.06479113384484228,
-                        'Spring': 0.07476212052560036,
-                        'Summer': 0.05352363960749331,
-                        'Fall': 0.0603448275862069},
-                        'Northeast': {'Winter': 0.09090909090909091,
-                        'Spring': 0.03322995126273815,
-                        'Summer': 0.04234769687964339,
-                        'Fall': 0.010869565217391304},
-                        'Other': {'Winter': 0.056,
-                        'Spring': 0.056,
-                        'Summer': 0.073,
-                        'Fall': 0.056
+        proportions = {'wind': {'west': {'winter': 0.09523809523809523,
+                        'spring': 0.032490974729241874,
+                        'summer': 0.049143708116157855,
+                        'fall': 0.07954545454545454},
+                        'highplains': {'winter': 0.0392156862745098,
+                        'spring': 0.160075329566855,
+                        'summer': 0.1625668449197861,
+                        'fall': 0.15789473684210525},
+                        'plains': {'winter': 0.12017167381974249,
+                        'spring': 0.1680933852140078,
+                        'summer': 0.16076447442383363,
+                        'fall': 0.14008941877794337},
+                        'midwest': {'winter': 0.16909620991253643,
+                        'spring': 0.09427860696517414,
+                        'summer': 0.08757637474541752,
+                        'fall': 0.0836092715231788},
+                        'southeast': {'winter': 0.056451612903225805,
+                        'spring': 0.05987093690248566,
+                        'summer': 0.03495624425856984,
+                        'fall': 0.037642397226349676},
+                        'northeast': {'winter': 0.013916500994035786,
+                        'spring': 0.016916780354706683,
+                        'summer': 0.019506098022877054,
+                        'fall': 0.0076481835564053535},
+                        'other': {'winter': 0.082,
+                        'spring': 0.0886,
+                        'summer': 0.085,
+                        'fall': 0.084}},
+                        'hail': {'west': {'winter': 0.0,
+                        'spring': 0.0,
+                        'summer': 0.036036036036036036,
+                        'fall': 0.030534351145038167},
+                        'highplains': {'winter': 0.06557377049180328,
+                        'spring': 0.07942583732057416,
+                        'summer': 0.10298507462686567,
+                        'fall': 0.04953560371517028},
+                        'plains': {'winter': 0.0410958904109589,
+                        'spring': 0.07186678352322524,
+                        'summer': 0.10559006211180125,
+                        'fall': 0.07168458781362007},
+                        'midwest': {'winter': 0.045146726862302484,
+                        'spring': 0.04868603042876902,
+                        'summer': 0.09302325581395349,
+                        'fall': 0.07397003745318352},
+                        'southeast': {'winter': 0.06479113384484228,
+                        'spring': 0.07476212052560036,
+                        'summer': 0.05352363960749331,
+                        'fall': 0.0603448275862069},
+                        'northeast': {'winter': 0.09090909090909091,
+                        'spring': 0.03322995126273815,
+                        'summer': 0.04234769687964339,
+                        'fall': 0.010869565217391304},
+                        'other': {'winter': 0.056,
+                        'spring': 0.056,
+                        'summer': 0.073,
+                        'fall': 0.056
                         }}}
 
         sig_pct = proportions[hazard][region][season]
@@ -431,3 +456,8 @@ def return_mag(lev,month,wfo,hazard):
     else:
         return np.random.choice([0,1], size=1, replace=True, p=fv.cig_dists[hazard][str(lev)])[0]
         
+
+# Need a lookup for bias correction
+
+# Map to region, season, hazard, and prediction level
+# Then use bias to correct prediction accordingly
