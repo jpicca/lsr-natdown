@@ -258,6 +258,8 @@ if haz_type == 'hail':
     bias_calc = df_bias.merge(bias_hail_df, on=['season', 'region', 'threat_level', 'magnitude_bin'], how='left')
     bias_calc.fillna(0, inplace=True)
 
+    # df_preds['hail_orig'] = df_preds['hail'].copy()
+
     df_preds['hail'] = df_preds['hail'] - bias_calc['median_bias'].values
 
     nat_preds = df_preds[['hail']].sum()
@@ -342,6 +344,8 @@ elif haz_type == 'wind':
 
     bias_calc = df_bias.merge(bias_wind_df, on=['season', 'region', 'threat_level', 'magnitude_bin'], how='left')
     bias_calc.fillna(0, inplace=True)
+
+    # df_preds['wind_orig'] = df_preds['wind'].copy()
 
     df_preds['wind'] = df_preds['wind'] - bias_calc['median_bias'].values
 

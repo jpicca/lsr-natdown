@@ -287,42 +287,76 @@ def find_dist(val,haz,size):
     else:
         dist2use = dists_final[haz][size]['>99']
 
-    return np.round(dist2use.rvs(fv.nsims)).astype(int)
+    return np.round(dist2use.rvs(fv.nsims)).astype(int), dist2use
 
 
 dists_final = {
     'hail': {
+        # dists fit to non-bias corrected predictions
+        # 'national' : {
+        #     '0': stats.loggamma(c=7.41226e-08, loc=1.16108e-06, scale=6.82163e-08),
+        #     '1': stats.genextreme(c=1.2064, loc=-0.154491, scale=1.39278),
+        #     '2': stats.genextreme(c=1.13339, loc=-1.10412, scale=3.51819),
+        #     '3': stats.genextreme(c=1.1102, loc=-0.426044, scale=3.8036),
+        #     '4': stats.genextreme(c=1.1618, loc=-0.078998, scale=4.73899),
+        #     '5': stats.genextreme(c=1.2553, loc=0.760249, scale=5.32216),
+        #     '6-9': stats.genextreme(c=0.817799, loc=-3.23174, scale=10.0797),
+        #     '10-19': stats.loggamma(c=0.304106, loc=12.8153, scale=4.20752),
+        #     '20-29': stats.loggamma(c=0.232072, loc=18.2721, scale=4.92087),
+        #     '30-49': stats.t(df=4.08899, loc=1.15502, scale=17.6415),
+        #     '50-74': stats.loggamma(c=1.03948, loc=8.25854, scale=29.3182),
+        #     '75-99': stats.t(df=1.60133, loc=7.50007, scale=16.1067),
+        #     '>99': stats.loggamma(c=1.02956, loc=9.51261, scale=60.9035),
+        # }
+        # dists fit to bias corrected predictions
         'national' : {
             '0': stats.loggamma(c=7.41226e-08, loc=1.16108e-06, scale=6.82163e-08),
-            '1': stats.genextreme(c=1.2064, loc=-0.154491, scale=1.39278),
-            '2': stats.genextreme(c=1.13339, loc=-1.10412, scale=3.51819),
-            '3': stats.genextreme(c=1.1102, loc=-0.426044, scale=3.8036),
-            '4': stats.genextreme(c=1.1618, loc=-0.078998, scale=4.73899),
-            '5': stats.genextreme(c=1.2553, loc=0.760249, scale=5.32216),
-            '6-9': stats.genextreme(c=0.817799, loc=-3.23174, scale=10.0797),
-            '10-19': stats.loggamma(c=0.304106, loc=12.8153, scale=4.20752),
-            '20-29': stats.loggamma(c=0.232072, loc=18.2721, scale=4.92087),
-            '30-49': stats.t(df=4.08899, loc=1.15502, scale=17.6415),
-            '50-74': stats.loggamma(c=1.03948, loc=8.25854, scale=29.3182),
-            '75-99': stats.t(df=1.60133, loc=7.50007, scale=16.1067),
-            '>99': stats.loggamma(c=1.02956, loc=9.51261, scale=60.9035),
+            '1': stats.genextreme(c=1.20771, loc=-0.18687, scale=1.43339),
+            '2': stats.genextreme(c=1.09339, loc=-0.895171, scale=3.16556),
+            '3': stats.genextreme(c=1.22779, loc=-0.955871, scale=4.85697),
+            '4': stats.genextreme(c=1.16706, loc=0.450822, scale=4.14212),
+            '5': stats.genextreme(c=1.14026, loc=-0.946829, scale=6.78091),
+            '6-9': stats.genextreme(c=0.762406, loc=-3.8427, scale=9.87485),
+            '10-19': stats.loggamma(c=0.239647, loc=13.4717, scale=3.81016),
+            '20-29': stats.loggamma(c=0.959766, loc=3.51198, scale=15.8819),
+            '30-49': stats.beta(a=2.21124e+06, b=2.4696, loc=-4.19045e+07, scale=4.19046e+07),
+            '50-74': stats.loggamma(c=1.44899, loc=-12.0809, scale=30.6428),
+            '75-99': stats.t(df=1.08371, loc=-5.90717, scale=15.6797),
+            '>99': stats.t(df=10.899, loc=-33.7691, scale=66.2461)
         }
     },
     'wind': {
+        # dists fit to non-bias corrected predictions
+        # 'national': {
+        #     '0': stats.loggamma(c=2.44261e-07, loc=1.7492e-06, scale=9.19515e-08),
+        #     '1': stats.genextreme(c=1.14585, loc=-0.277369, scale=1.46367),
+        #     '2': stats.loggamma(c=6.36961e-08, loc=2.00001, scale=1.3902e-07),
+        #     '3': stats.loggamma(c=1.5396e-07, loc=3.00001, scale=3.00359e-07),
+        #     '4': stats.loggamma(c=5.80831e-07, loc=4.00003, scale=1.00534e-06),
+        #     '5': stats.beta(a=52.6253, b=0.686944, loc=-132.7, scale=137.7),
+        #     '6-9': stats.beta(a=97.2469, b=0.97055, loc=-820.753, scale=829.753),
+        #     '10-19': stats.loggamma(c=0.758362, loc=8.6464, scale=5.63071),
+        #     '20-29': stats.loggamma(c=0.502779, loc=15.2561, scale=6.98456),
+        #     '30-49': stats.loggamma(c=2.01773, loc=-6.57736, scale=24.0644),
+        #     '50-74': stats.t(df=6.2996, loc=4.64933, scale=20.6239),
+        #     '75-99': stats.t(df=709.662, loc=7.66889, scale=35.5976),
+        #     '>99': stats.loggamma(c=5.71804, loc=-232.157, scale=134.196)
+        # }
+        # dists fit to bias corrected predictions
         'national': {
-            '0': stats.loggamma(c=2.44261e-07, loc=1.7492e-06, scale=9.19515e-08),
-            '1': stats.genextreme(c=1.14585, loc=-0.277369, scale=1.46367),
-            '2': stats.loggamma(c=6.36961e-08, loc=2.00001, scale=1.3902e-07),
-            '3': stats.loggamma(c=1.5396e-07, loc=3.00001, scale=3.00359e-07),
-            '4': stats.loggamma(c=5.80831e-07, loc=4.00003, scale=1.00534e-06),
-            '5': stats.beta(a=52.6253, b=0.686944, loc=-132.7, scale=137.7),
-            '6-9': stats.beta(a=97.2469, b=0.97055, loc=-820.753, scale=829.753),
-            '10-19': stats.loggamma(c=0.758362, loc=8.6464, scale=5.63071),
-            '20-29': stats.loggamma(c=0.502779, loc=15.2561, scale=6.98456),
-            '30-49': stats.loggamma(c=2.01773, loc=-6.57736, scale=24.0644),
-            '50-74': stats.t(df=6.2996, loc=4.64933, scale=20.6239),
-            '75-99': stats.t(df=709.662, loc=7.66889, scale=35.5976),
-            '>99': stats.loggamma(c=5.71804, loc=-232.157, scale=134.196)
+            '0': stats.genextreme(c=1.36277, loc=-1.29109, scale=1.75947),
+            '1': stats.genextreme(c=1.33181, loc=-4.71568, scale=7.61219),
+            '2': stats.genextreme(c=0.890354, loc=-9.17248, scale=9.98052),
+            '3': stats.loggamma(c=0.0965443, loc=2.30149, scale=1.19838),
+            '4': stats.t(df=2.88453, loc=-10.0599, scale=6.65339),
+            '5': stats.genextreme(c=0.688419, loc=-12.8437, scale=11.3495),
+            '6-9': stats.t(df=2.42813, loc=-9.22327, scale=9.33337),
+            '10-19': stats.loggamma(c=0.375022, loc=1.89085, scale=7.56051),
+            '20-29': stats.loggamma(c=1.8593, loc=-27.8818, scale=26.3917),
+            '30-49': stats.t(df=5.33745, loc=-24.2979, scale=25.576),
+            '50-74': stats.loggamma(c=25.1402, loc=-692.695, scale=203.403),
+            '75-99': stats.loggamma(c=0.593643, loc=2.93888, scale=25.9894),
+            '>99': stats.loggamma(c=6.77702, loc=-387.328, scale=171.74)
         }
     },
 }
@@ -330,7 +364,13 @@ dists_final = {
 def add_distribution(df,haz='hail'):
     """ Add distribution columns to the dataframe """
 
-    dist = df[haz] - find_dist(df[haz],haz,'national')
+    residuals, dist2use = find_dist(df[haz],haz,'national')
+
+    dist = df[haz] - residuals
+
+    while (dist < 0).any():
+        numsub0 = np.sum(dist < 0)
+        dist[dist < 0] = df[haz] - dist2use.rvs(numsub0).astype(int)
 
     dist[dist < 0] = 0  
 
