@@ -73,9 +73,6 @@ day = int(otlk_ts[6:8])
 valid_hr = int(ndfd_file.as_posix().split('_')[-2][:2])
 otlkdt = dt.datetime(year, month, day, valid_hr)
 
-outdir = pathlib.Path(out_path,'dates',otlk_ts,'lsr',haz_type).resolve()
-outdir.mkdir(parents=True,exist_ok=True)
-
 with np.load(impacts_grids_file) as NPZ:
     population = NPZ["population"]
     proj = pyproj.Proj(NPZ["srs"].item())
@@ -412,5 +409,7 @@ elif haz_type == 'wind':
 
     dists_df = pd.DataFrame({'wfost': wfo_st_unique,'wind_dists': nonsig_lists,'sigwind_dists': sig_lists})
 
+outdir = pathlib.Path(out_path,'dates',otlk_ts,'lsr',haz_type).resolve()
+outdir.mkdir(parents=True,exist_ok=True)
 
 make_plots(dists_df, otlk_ts, outdir, haz_type, only_nat=True)
