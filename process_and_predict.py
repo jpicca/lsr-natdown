@@ -411,8 +411,8 @@ elif haz_type == 'wind':
     dists_df = pd.DataFrame({'wfost': wfo_st_unique,'wind_dists': nonsig_lists,'sigwind_dists': sig_lists})
 
 outdir = pathlib.Path(out_path,'dates',otlk_ts,'lsr',haz_type).resolve()
-outdir.mkdir(parents=True,exist_ok=True)
+outdir.mkdir(parents=True,exist_ok=True, mode=0o777)
 
 make_plots(dists_df, otlk_ts, outdir, haz_type, only_nat=True)
 
-os.chmod(outdir.as_posix(), 0o644)
+# os.chmod(outdir.as_posix(), 0o644)
