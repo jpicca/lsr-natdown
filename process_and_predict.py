@@ -43,6 +43,9 @@ haz_type = args.hazard
 
 isTest = bool(args.test)
 
+# Set proper permission structure
+os.umask(0o022)
+
 # Data files
 impacts_grids_file = f'{data_path}/impact-grids-5km.npz'
 cwa_file = f'{data_path}/cwas.npz'
@@ -411,8 +414,6 @@ elif haz_type == 'wind':
     dists_df = pd.DataFrame({'wfost': wfo_st_unique,'wind_dists': nonsig_lists,'sigwind_dists': sig_lists})
 
 outdir = pathlib.Path(out_path,'dates',otlk_ts,'lsr',haz_type).resolve()
-outdir.mkdir(parents=True,exist_ok=True, mode=0o777)
+outdir.mkdir(parents=True,exist_ok=True)
 
 make_plots(dists_df, otlk_ts, outdir, haz_type, only_nat=True)
-
-# os.chmod(outdir.as_posix(), 0o644)
