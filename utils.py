@@ -319,10 +319,10 @@ dists_final = {
             '6-9': stats.genextreme(c=0.762406, loc=-3.8427, scale=9.87485),
             '10-19': stats.loggamma(c=0.239647, loc=13.4717, scale=3.81016),
             '20-29': stats.loggamma(c=0.959766, loc=3.51198, scale=15.8819),
-            '30-49': stats.beta(a=2.21124e+06, b=2.4696, loc=-4.19045e+07, scale=4.19046e+07),
+            '30-49': stats.loggamma(c=0.405017, loc=20.4285, scale=11.5512),
             '50-74': stats.loggamma(c=1.44899, loc=-12.0809, scale=30.6428),
-            '75-99': stats.t(df=1.08371, loc=-5.90717, scale=15.6797),
-            '>99': stats.t(df=10.899, loc=-33.7691, scale=66.2461)
+            '75-99': stats.loggamma(c=0.657018, loc=21.1391, scale=32.0178),
+            '>99': stats.loggamma(c=1.29503, loc=-25.3442, scale=69.6805)
         }
     },
     'wind': {
@@ -348,12 +348,12 @@ dists_final = {
             '1': stats.genextreme(c=1.33181, loc=-4.71568, scale=7.61219),
             '2': stats.genextreme(c=0.890354, loc=-9.17248, scale=9.98052),
             '3': stats.loggamma(c=0.0965443, loc=2.30149, scale=1.19838),
-            '4': stats.t(df=2.88453, loc=-10.0599, scale=6.65339),
-            '5': stats.genextreme(c=0.688419, loc=-12.8437, scale=11.3495),
-            '6-9': stats.t(df=2.42813, loc=-9.22327, scale=9.33337),
+            '4': stats.loggamma(c=0.781308, loc=-4.7701, scale=6.82382),
+            '5': stats.loggamma(c=0.425713, loc=-1.12073, scale=4.28319),
+            '6-9': stats.loggamma(c=0.35984, loc=2.48445, scale=5.47689),
             '10-19': stats.loggamma(c=0.375022, loc=1.89085, scale=7.56051),
             '20-29': stats.loggamma(c=1.8593, loc=-27.8818, scale=26.3917),
-            '30-49': stats.t(df=5.33745, loc=-24.2979, scale=25.576),
+            '30-49': stats.loggamma(c=3.0488, loc=-74.3352, scale=50.5704),
             '50-74': stats.loggamma(c=25.1402, loc=-692.695, scale=203.403),
             '75-99': stats.loggamma(c=0.593643, loc=2.93888, scale=25.9894),
             '>99': stats.loggamma(c=6.77702, loc=-387.328, scale=171.74)

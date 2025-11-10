@@ -121,10 +121,10 @@ def make_images(affected, affected_df, otlk_ts, outdir, haz_type, level='nationa
         box_list_counts[i]['whislo'],box_list_counts[i]['q1'], box_list_counts[i]['q3'], box_list_counts[i]['whishi'] = np.percentile(countsup[i],[5,25,75,95])
         
     ### **** plotting and text for max on wind counts ***
-    ax2.plot([box_list_counts[0]['whishi'],np.max(countsup[0])], [0.5,0.5], color='k', linestyle='dashed', linewidth=0.25)
-    ax2.text(int(np.max(countsup[0])),0.5,f'{int(np.max(countsup[0]))}',ha='left',va='center',fontsize=7)
-    ax2.plot([box_list_counts[1]['whishi'],np.max(countsup[1])], [1.5,1.5], color='k', linestyle='dashed', linewidth=0.25)    
-    ax2.text(int(np.max(countsup[1])),1.5,f'{int(np.max(countsup[1]))}',ha='left',va='center',fontsize=7)
+    # ax2.plot([box_list_counts[0]['whishi'],np.max(countsup[0])], [0.5,0.5], color='k', linestyle='dashed', linewidth=0.25)
+    # ax2.text(int(np.max(countsup[0])),0.5,f'{int(np.max(countsup[0]))}',ha='left',va='center',fontsize=7)
+    # ax2.plot([box_list_counts[1]['whishi'],np.max(countsup[1])], [1.5,1.5], color='k', linestyle='dashed', linewidth=0.25)    
+    # ax2.text(int(np.max(countsup[1])),1.5,f'{int(np.max(countsup[1]))}',ha='left',va='center',fontsize=7)
 
     box_counts = ax2.bxp(box_list_counts,vert=False,showfliers=False, positions=[0.5,1.5],
                 widths=0.15,showcaps=False,patch_artist=True,
