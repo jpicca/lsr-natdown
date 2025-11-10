@@ -11,6 +11,7 @@ import pandas as pd
 import pyproj
 import datetime as dt
 import glob
+import os
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -413,3 +414,5 @@ outdir = pathlib.Path(out_path,'dates',otlk_ts,'lsr',haz_type).resolve()
 outdir.mkdir(parents=True,exist_ok=True)
 
 make_plots(dists_df, otlk_ts, outdir, haz_type, only_nat=True)
+
+os.chmod(outdir.as_posix(), 0o644)
