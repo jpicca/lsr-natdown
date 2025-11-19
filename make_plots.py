@@ -56,7 +56,7 @@ def make_images(affected, affected_df, otlk_ts, outdir, haz_type, level='nationa
 
     kw = dict(horizontalalignment="center",
             verticalalignment="center",
-            fontsize=10,weight='bold')
+            fontsize=14,weight='bold')
 
     if haz_type == 'hail':
         countsup = [affected_df.sum().hail_dists,
@@ -124,12 +124,12 @@ def make_images(affected, affected_df, otlk_ts, outdir, haz_type, level='nationa
     
     ax2.grid(which="minor", color="w", linestyle='-', linewidth=1)
     ax2.tick_params(which="minor", bottom=False, left=False, right=False)
-    ax2.tick_params(labelsize=10,length=0)
+    ax2.tick_params(labelsize=12,length=0)
     ax2.set_ylim([-0.5,0.5])
 
     ax3.grid(which="minor", color="w", linestyle='-', linewidth=1)
     ax3.tick_params(which="minor", bottom=False, left=False, right=False)
-    ax3.tick_params(labelsize=10,length=0)
+    ax3.tick_params(labelsize=12,length=0)
     ax3.set_ylim([-0.5,0.5])
 
     for i in range(len(starter_list)):
@@ -169,21 +169,21 @@ def make_images(affected, affected_df, otlk_ts, outdir, haz_type, level='nationa
     ### **** text for medians on counts ***
     for idx,median in enumerate(box_counts['medians']):
         text = median.get_xdata()[0]
-        ax1.text(int(text),idx+0.65,f'{int(text)}',ha='center',fontsize=9)
+        ax1.text(int(text),idx+0.65,f'{int(text)}',ha='center',fontsize=12)
 
     ### **** text for 5/95% on counts ***
     for idx,worst in enumerate(box_counts['whiskers']):
         text = worst.get_xdata()[1]
         worst_x_off = int(text) / 5
         if idx % 2 == 1:
-            ax1.text(int(text),int(idx/2)+0.55,f'{int(text)}',ha='left',va='center',fontsize=7)
+            ax1.text(int(text),int(idx/2)+0.55,f'{int(text)}',ha='left',va='center',fontsize=12)
         else:
-            ax1.text(int(text),int(idx/2)+0.55,f'{int(text)}',ha='right',va='center',fontsize=7)
+            ax1.text(int(text),int(idx/2)+0.55,f'{int(text)}',ha='right',va='center',fontsize=12)
 
     ax1.spines[:].set_visible(False)
     ax1.set_yticks([0.5,1.5])
-    ax1.tick_params(labelsize=10,length=0,pad=10,axis='y')
-    ax1.tick_params(labelsize=8,axis='x')
+    ax1.tick_params(labelsize=12,length=0,pad=10,axis='y')
+    ax1.tick_params(labelsize=12,axis='x')
     ax1.set_xscale('symlog')
     ax1.set_xlim([0,600])
     ax1.minorticks_off()
