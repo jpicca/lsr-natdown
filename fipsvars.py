@@ -1,4 +1,4 @@
-nsims = 1000
+nsims = 5000
 
 fipsToState = {
     0:"0",

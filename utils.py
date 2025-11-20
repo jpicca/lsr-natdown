@@ -350,7 +350,7 @@ dists_final = {
             '3': stats.loggamma(c=0.0965443, loc=2.30149, scale=1.19838),
             '4': stats.loggamma(c=0.781308, loc=-4.7701, scale=6.82382),
             '5': stats.loggamma(c=0.425713, loc=-1.12073, scale=4.28319),
-            '6-9': stats.loggamma(c=0.35984, loc=2.48445, scale=5.47689),
+            '6-9': stats.t(df=2.42813, loc=-9.22327, scale=9.33337),
             '10-19': stats.loggamma(c=0.375022, loc=1.89085, scale=7.56051),
             '20-29': stats.loggamma(c=1.8593, loc=-27.8818, scale=26.3917),
             '30-49': stats.loggamma(c=3.0488, loc=-74.3352, scale=50.5704),
