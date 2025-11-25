@@ -310,19 +310,19 @@ dists_final = {
         # }
         # dists fit to bias corrected predictions
         'national' : {
-            '0': stats.loggamma(c=7.41226e-08, loc=1.16108e-06, scale=6.82163e-08),
-            '1': stats.genextreme(c=1.20771, loc=-0.18687, scale=1.43339),
-            '2': stats.genextreme(c=1.09339, loc=-0.895171, scale=3.16556),
-            '3': stats.genextreme(c=1.22779, loc=-0.955871, scale=4.85697),
-            '4': stats.genextreme(c=1.16706, loc=0.450822, scale=4.14212),
-            '5': stats.genextreme(c=1.14026, loc=-0.946829, scale=6.78091),
-            '6-9': stats.genextreme(c=0.762406, loc=-3.8427, scale=9.87485),
-            '10-19': stats.loggamma(c=0.239647, loc=13.4717, scale=3.81016),
-            '20-29': stats.loggamma(c=0.959766, loc=3.51198, scale=15.8819),
-            '30-49': stats.loggamma(c=0.405017, loc=20.4285, scale=11.5512),
-            '50-74': stats.loggamma(c=1.44899, loc=-12.0809, scale=30.6428),
-            '75-99': stats.loggamma(c=0.657018, loc=21.1391, scale=32.0178),
-            '>99': stats.loggamma(c=1.29503, loc=-25.3442, scale=69.6805)
+            '0': stats.genextreme(c=1.09198, loc=-2.1123, scale=2.3066),
+            '1': stats.genextreme(c=1.14185, loc=-9.34386, scale=11.8111),
+            '2': stats.loggamma(c=0.149137, loc=1.45328, scale=2.79098),
+            '3': stats.loggamma(c=0.149137, loc=1.45328, scale=2.79098),
+            '4': stats.loggamma(c=0.149137, loc=1.45328, scale=2.79098),
+            '5': stats.loggamma(c=0.149137, loc=1.45328, scale=2.79098),
+            '6-9': stats.loggamma(c=0.161652, loc=4.89125, scale=4.49661),
+            '10-19': stats.loggamma(c=0.316596, loc=-2.42733, scale=8.53556),
+            '20-29': stats.loggamma(c=1.20987, loc=-20.8669, scale=24.0039),
+            '30-49': stats.loggamma(c=0.999023, loc=-16.5967, scale=23.1342),
+            '50-74': stats.loggamma(c=0.360577, loc=9.59717, scale=15.8975),
+            '75-99': stats.loggamma(c=0.679983, loc=-5.30159, scale=35.7303),
+            '>99': stats.loggamma(c=170.689, loc=-5214.7, scale=1001.43)
         }
     },
     'wind': {
@@ -344,19 +344,19 @@ dists_final = {
         # }
         # dists fit to bias corrected predictions
         'national': {
-            '0': stats.genextreme(c=1.36277, loc=-1.29109, scale=1.75947),
-            '1': stats.genextreme(c=1.33181, loc=-4.71568, scale=7.61219),
-            '2': stats.genextreme(c=0.890354, loc=-9.17248, scale=9.98052),
-            '3': stats.loggamma(c=0.0965443, loc=2.30149, scale=1.19838),
-            '4': stats.loggamma(c=0.781308, loc=-4.7701, scale=6.82382),
-            '5': stats.loggamma(c=0.425713, loc=-1.12073, scale=4.28319),
-            '6-9': stats.t(df=2.42813, loc=-9.22327, scale=9.33337),
-            '10-19': stats.loggamma(c=0.375022, loc=1.89085, scale=7.56051),
-            '20-29': stats.loggamma(c=1.8593, loc=-27.8818, scale=26.3917),
-            '30-49': stats.loggamma(c=3.0488, loc=-74.3352, scale=50.5704),
-            '50-74': stats.loggamma(c=25.1402, loc=-692.695, scale=203.403),
-            '75-99': stats.loggamma(c=0.593643, loc=2.93888, scale=25.9894),
-            '>99': stats.loggamma(c=6.77702, loc=-387.328, scale=171.74)
+            '0': stats.genextreme(c=1.31405, loc=-2.06758, scale=2.7169),
+            '1': stats.genextreme(c=1.29926, loc=-4.07533, scale=6.59419),
+            '2': stats.loggamma(c=0.230532, loc=1.18724, scale=2.68352),
+            '3': stats.loggamma(c=0.230532, loc=1.18724, scale=2.68352),
+            '4': stats.loggamma(c=0.230532, loc=1.18724, scale=2.68352),
+            '5': stats.loggamma(c=0.230532, loc=1.18724, scale=2.68352),
+            '6-9': stats.genextreme(c=0.756419, loc=-16.1905, scale=18.4344),
+            '10-19': stats.loggamma(c=0.619913, loc=-2.47282, scale=11.2634),
+            '20-29': stats.loggamma(c=3.169, loc=-56.4409, scale=36.6315),
+            '30-49': stats.loggamma(c=4.63178, loc=-113.821, scale=61.9459),
+            '50-74': stats.loggamma(c=222.011, loc=-3135.35, scale=573.184),
+            '75-99': stats.loggamma(c=0.396421, loc=13.7891, scale=21.4702),
+            '>99': stats.loggamma(c=11.7541, loc=-590.896, scale=217.212)
         }
     },
 }
