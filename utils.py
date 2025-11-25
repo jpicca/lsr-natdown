@@ -418,10 +418,10 @@ def find_season(month,temp=False):
     return season
 
 def return_mag_bin(pred):
-    if pred < 5:
+    if pred < 10:
         return str(int(pred))
     else:
-        return '>4'
+        return '>9'
     
 
 def return_mag(lev,month,wfo,hazard):
