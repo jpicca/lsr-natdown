@@ -20,8 +20,6 @@ import utils as u
 import fipsvars as fv
 from make_plots import make_plots
 
-from pdb import set_trace as st
-
 parser = argparse.ArgumentParser()
 parser.add_argument("-o", "--otlkfile", required=True)
 parser.add_argument("-c", "--confile", required=True)
@@ -51,10 +49,6 @@ os.umask(0o022)
 # Data files
 impacts_grids_file = f'{data_path}/impact-grids-5km.npz'
 cwa_file = f'{data_path}/cwas.npz'
-
-# Bias files
-bias_wind_file = f'{data_path}/wind_bias_table.csv'
-bias_hail_file = f'{data_path}/hail_bias_table.csv'
 
 # ML models
 with open(f'{ml_path.as_posix()}/wfo-label-encoder.model','rb') as f:
@@ -96,7 +90,6 @@ with np.load(cwa_file) as NPZ:
     wfo = NPZ['cwas']
 
 map_func = np.vectorize(lambda x: fv.fipsToState.get(x, '0'))
-# wfo_state_2d = np.char.add(wfo.astype('str'),map_func(state))
 
 bias_wind_df = pd.read_csv(bias_wind_file)
 bias_hail_df = pd.read_csv(bias_hail_file)
