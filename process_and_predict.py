@@ -91,9 +91,6 @@ with np.load(cwa_file) as NPZ:
 
 map_func = np.vectorize(lambda x: fv.fipsToState.get(x, '0'))
 
-bias_wind_df = pd.read_csv(bias_wind_file)
-bias_hail_df = pd.read_csv(bias_hail_file)
-
 ### Outlook feature processing
 # Read grib file
 def read_ndfd_grib_file(grbfile,which='torn'):
