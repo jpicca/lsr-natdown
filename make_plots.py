@@ -5,42 +5,58 @@ import matplotlib.cbook as cbook
 import numpy as np
 import fipsvars as fv
 
-def make_plots(all_preds,otlk_ts,outdir, haz_type, only_nat=False):
+from pdb import set_trace as st
+
+def make_plots(reports_df,otlk_ts,outdir, haz_type, only_nat=False):
     """
     Function to create plots based on the provided DataFrame.
     Parameters:
-    - all_preds: DataFrame containing predictions with columns for 'wfost', 'wind',
+    - all_preds: DataFrame containing predictions with columns for 'wfo', 'wind',
                  'hail', 'sigwind', 'sighail', and their respective distributions.
     Returns:
     - None: Writes out the plots.
     """
     
-    affected_wfos = np.unique(all_preds.wfost.str.slice(0,3))
-    affected_states = np.unique(all_preds.wfost.str.slice(3,5))
+    affected_wfos = reports_df.wfo.unique()
+    affected_states = reports_df.st.unique()
 
     if not only_nat:
 
         # For later (when we start to break down by WFOs and States)
         # Plot WFOs
         for affected in affected_wfos:
-            affected_df = all_preds[all_preds.wfost.str.slice(0,3) == affected]
+            affected_df = reports_df[reports_df.wfo == affected]
+
+            affected_reg_dist = affected_df.groupby('sim').count()['cig'].reindex(index=np.arange(1,fv.nsims+1,1),fill_value=0).values
+            affected_sig_dist = affected_df.groupby('sim').sum()['sig'].reindex(index=np.arange(1,fv.nsims+1,1),fill_value=0).values
+
+            affected_lists = [affected_reg_dist, affected_sig_dist]
 
             # affected_summed = affected_df.sum()
-            make_images(affected, affected_df, otlk_ts, outdir, 'wfo')
+            make_images(affected, affected_lists, otlk_ts, 
+                        outdir, haz_type, 'wfo')
 
         # # Plot States
         for affected in affected_states:
-            affected_df = all_preds[all_preds.wfost.str.slice(3,5) == affected]
-            # affected_summed = affected_df.sum()
-            make_images(affected, affected_df, otlk_ts, outdir, 'state')
+            affected_df = reports_df[reports_df.st == affected]
+
+            affected_reg_dist = affected_df.groupby('sim').count()['cig'].reindex(index=np.arange(1,fv.nsims+1,1),fill_value=0).values
+            affected_sig_dist = affected_df.groupby('sim').sum()['sig'].reindex(index=np.arange(1,fv.nsims+1,1),fill_value=0).values
+
+            affected_lists = [affected_reg_dist, affected_sig_dist]
+
+            make_images(affected, affected_lists, otlk_ts,
+                        outdir, haz_type, 'state')
 
     # Plot National
     affected = 'National'
-    affected_df = all_preds
+    affected_reg_dist = reports_df.groupby('sim').count()['cig'].reindex(index=np.arange(1,fv.nsims+1,1),fill_value=0).values
+    affected_sig_dist = reports_df.groupby('sim').sum()['sig'].reindex(index=np.arange(1,fv.nsims+1,1),fill_value=0).values
+    affected_lists = [affected_reg_dist, affected_sig_dist]
 
-    make_images(affected, affected_df, otlk_ts, outdir, haz_type)
+    make_images(affected, affected_lists, otlk_ts, outdir, haz_type)
 
-def make_images(affected, affected_df, otlk_ts, outdir, haz_type, level='national'):
+def make_images(affected, affected_lists, otlk_ts, outdir, haz_type, level='national'):
 
     fig = plt.figure(figsize=(6,10))
     gs = gridspec.GridSpec(12,12)
@@ -58,16 +74,22 @@ def make_images(affected, affected_df, otlk_ts, outdir, haz_type, level='nationa
             verticalalignment="center",
             fontsize=14,weight='bold')
 
+    countsup = [affected_lists[0],affected_lists[1]]
+    starter_list = [[],[]]
+
     if haz_type == 'hail':
-        countsup = [affected_df.sum().hail_dists,
-                                    affected_df.sum().sighail_dists]
-        starter_list = [[],[]]
+
+        threshes = [fv.thres_dict['hail'][level],
+                    fv.thres_dict['sighail'][level]]
+
         # All hail
-        for thresh in [1,10,20,50,100,250]:
+        for thresh in threshes[0]:
+        # for thresh in [1,10,20,50,100,250]:
             starter_list[0].append(int(np.floor(np.sum(np.array(countsup[0]) >= thresh)/(fv.nsims/100))))
         
         # Significant hail
-        for thresh in [1,2,5,10,20,50]:
+        for thresh in threshes[1]:
+        # for thresh in [1,2,5,10,20,50]:
             starter_list[1].append(int(np.floor(np.sum(np.array(countsup[1]) >= thresh)/(fv.nsims/100))))
 
         ax2.imshow([starter_list[1]],cmap='Greens',vmin=0,vmax=100)
@@ -78,20 +100,22 @@ def make_images(affected, affected_df, otlk_ts, outdir, haz_type, level='nationa
         ax1.set_title('Hail Report Count Distributions',loc='left',weight='bold',size=10)
         ax1.set_yticklabels(['1+"','2+"'])
 
-        xlabels = [['1+','10+','20+','50+','100+','250+'],
-                  ['1+','2+','5+','10+','20+','50+']]
+        # xlabels = [['1+','10+','20+','50+','100+','250+'],
+        #           ['1+','2+','5+','10+','20+','50+']]
 
     else:
-        countsup = [affected_df.sum().wind_dists,
-                                    affected_df.sum().sigwind_dists]
 
-        starter_list = [[],[]]
+        threshes = [fv.thres_dict['hail'][level],
+                    fv.thres_dict['sighail'][level]]
+
         # All wind
-        for thresh in [1,10,25,100,200,500]:
+        for thresh in threshes[0]:
+        # for thresh in [1,10,25,100,200,500]:
             starter_list[0].append(int(np.floor(np.sum(np.array(countsup[0]) >= thresh)/(fv.nsims/100))))
         
         # Significant wind
-        for thresh in [1,2,5,10,20,50]:
+        for thresh in threshes[1]:
+        # for thresh in [1,2,5,10,20,50]:
             starter_list[1].append(int(np.floor(np.sum(np.array(countsup[1]) >= thresh)/(fv.nsims/100))))
 
         ax2.imshow([starter_list[1]],cmap='Blues',vmin=0,vmax=100)
@@ -102,8 +126,11 @@ def make_images(affected, affected_df, otlk_ts, outdir, haz_type, level='nationa
         ax1.set_title('Wind Report Count Distributions',loc='left',weight='bold',size=10)
         ax1.set_yticklabels(['50+ kt','65+ kt'])
 
-        xlabels = [['1+','10+','25+','100+','200+','500+'],
-                  ['1+','2+','5+','10+','20+','50+']]
+        # xlabels = [['1+','10+','25+','100+','200+','500+'],
+        #           ['1+','2+','5+','10+','20+','50+']]
+
+    xlabels = [[f'{thresh}+' for thresh in threshes[0]],
+                [f'{thresh}+' for thresh in threshes[1]]]
 
     ax2.spines[:].set_visible(False)
     ax2.set_xticks(np.arange(len(starter_list[1]))+.5, minor=True)
@@ -153,7 +180,7 @@ def make_images(affected, affected_df, otlk_ts, outdir, haz_type, level='nationa
     box_list_counts = cbook.boxplot_stats(countsup)
 
     for i in range(0,len(countsup)):
-        box_list_counts[i]['whislo'],box_list_counts[i]['q1'], box_list_counts[i]['q3'], box_list_counts[i]['whishi'] = np.percentile(countsup[i],[5,25,75,95])
+        box_list_counts[i]['whislo'],box_list_counts[i]['q1'], box_list_counts[i]['q3'], box_list_counts[i]['whishi'] = np.percentile(countsup[i],[2.5,25,75,97.5])
 
     box_counts = ax1.bxp(box_list_counts,vert=False,showfliers=False, positions=[0.5,1.5],
                 widths=0.15,showcaps=False,patch_artist=True,
