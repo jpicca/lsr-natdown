@@ -54,10 +54,10 @@ cwa_file = f'{data_path}/cwas.npz'
 with open(f'{ml_path.as_posix()}/wfo-label-encoder.model','rb') as f:
     wfo_label_encoder = pickle.load(f)
 
-with open(f'{ml_path.as_posix()}/det/hgb-det_wind-newfeats-dec25.model','rb') as f:
+with open(f'{ml_path.as_posix()}/det/hgb-det_wind.model','rb') as f:
     wind_model = pickle.load(f)
 
-with open(f'{ml_path.as_posix()}/det/hgb-det_hail-newfeats-dec25.model','rb') as f:
+with open(f'{ml_path.as_posix()}/det/hgb-det_hail.model','rb') as f:
     hail_model = pickle.load(f)
 
 models = {
