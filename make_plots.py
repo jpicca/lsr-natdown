@@ -212,12 +212,12 @@ def make_images(affected, affected_lists, otlk_ts, outdir, haz_type, level='nati
     ax1.tick_params(labelsize=12,length=0,pad=10,axis='y')
     ax1.tick_params(labelsize=12,axis='x')
     ax1.set_xscale('symlog')
-    ax1.set_xlim([0,600])
+    ax1.set_xlim([0,1100])
+    ax1.set_xticks([0,1,5,10,25,50,100,200,500,1000])
+    ax1.set_xticklabels(['0','1','5','10','25','50','100','200','500','1000'])
     ax1.minorticks_off()
     ax1.spines['bottom'].set_position(('data', 0.0))
 
-    ax1.set_xticks([0,1,5,10,25,50,100,200,500])
-    ax1.set_xticklabels(['0','1','5','10','25','50','100','200','500'])
     ax1.grid(axis = 'x', alpha=0.3)
 
     plt.setp(box_counts['boxes'],facecolor='black')
