@@ -377,4 +377,7 @@ elif haz_type == 'wind':
 outdir = pathlib.Path(out_path,'dates',otlk_ts,'lsr',haz_type).resolve()
 outdir.mkdir(parents=True,exist_ok=True)
 
+outdir_json = str(outdir).replace('/images/','/jsons/')
+pathlib.Path(outdir_json).mkdir(parents=True,exist_ok=True)
+
 make_plots(reports_df, otlk_ts, outdir, haz_type, only_nat=False)

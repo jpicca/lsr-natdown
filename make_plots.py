@@ -7,6 +7,9 @@ import datetime as dt
 import numpy as np
 import fipsvars as fv
 
+import json
+from pdb import set_trace as st
+
 def make_plots(reports_df,otlk_ts,outdir, haz_type, only_nat=False):
     """
     Function to create plots based on the provided DataFrame.
@@ -19,6 +22,9 @@ def make_plots(reports_df,otlk_ts,outdir, haz_type, only_nat=False):
     
     affected_wfos = reports_df.wfo.unique()
     affected_states = reports_df.st.unique()
+
+    # Dictionary to store all percentile data
+    percentile_data = {}
 
     if not only_nat:
 
@@ -38,7 +44,7 @@ def make_plots(reports_df,otlk_ts,outdir, haz_type, only_nat=False):
 
             # affected_summed = affected_df.sum()
             make_images(affected, affected_lists, otlk_ts, 
-                        outdir, haz_type, 'wfo')
+                        outdir, haz_type, percentile_data, 'wfo')
 
         # # Plot States
         for affected in affected_states:
@@ -54,7 +60,7 @@ def make_plots(reports_df,otlk_ts,outdir, haz_type, only_nat=False):
             affected_lists = [affected_reg_dist, affected_sig_dist]
 
             make_images(affected, affected_lists, otlk_ts,
-                        outdir, haz_type, 'state')
+                        outdir, haz_type, percentile_data, 'state')
 
     # Plot National
     affected = 'National'
@@ -62,9 +68,16 @@ def make_plots(reports_df,otlk_ts,outdir, haz_type, only_nat=False):
     affected_sig_dist = reports_df.groupby('sim').sum()['sig'].reindex(index=np.arange(1,fv.nsims+1,1),fill_value=0).values
     affected_lists = [affected_reg_dist, affected_sig_dist]
 
-    make_images(affected, affected_lists, otlk_ts, outdir, haz_type)
+    make_images(affected, affected_lists, otlk_ts, outdir, haz_type, percentile_data)
 
-def make_images(affected, affected_lists, otlk_ts, outdir, haz_type, level='national'):
+    # Write out JSON file
+    outdir_json = str(outdir).replace('/images/','/jsons/')
+
+    json_filename = f'{outdir_json}/{otlk_ts}-{haz_type}.json'
+    with open(json_filename, 'w') as f:
+        json.dump(percentile_data, f, indent=2)
+
+def make_images(affected, affected_lists, otlk_ts, outdir, haz_type, percentile_data=None, level='national'):
 
     issue_time = dt.datetime.strptime(otlk_ts, '%Y%m%d%H%M%S')
     exp_time = (issue_time + dt.timedelta(days=1)).replace(hour=12)
@@ -73,6 +86,30 @@ def make_images(affected, affected_lists, otlk_ts, outdir, haz_type, level='nati
         valid_time = issue_time.replace(hour=12)
     else:
         valid_time = issue_time
+
+    # Calculate percentiles and store in dictionary
+    if percentile_data is not None:
+        reg_percentiles = np.percentile(affected_lists[0], [2.5, 25, 50, 75, 97.5])
+        sig_percentiles = np.percentile(affected_lists[1], [2.5, 25, 50, 75, 97.5])
+        
+        percentile_data[affected] = {
+            'percentiles': {
+                'reg': {
+                    'p5': int(reg_percentiles[0]),
+                    'p25': int(reg_percentiles[1]),
+                    'p50': int(reg_percentiles[2]),
+                    'p75': int(reg_percentiles[3]),
+                    'p95': int(reg_percentiles[4])
+                },
+                'sig': {
+                    'p5': int(sig_percentiles[0]),
+                    'p25': int(sig_percentiles[1]),
+                    'p50': int(sig_percentiles[2]),
+                    'p75': int(sig_percentiles[3]),
+                    'p95': int(sig_percentiles[4])
+                }
+            }
+        }
 
     fig = plt.figure(figsize=(6,10))
     gs = gridspec.GridSpec(12,12)
