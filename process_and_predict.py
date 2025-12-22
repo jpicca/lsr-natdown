@@ -201,7 +201,12 @@ wfo_1d = wfo[wfo_impacted]
 G_href = pg.Gridder(lons_href, lats_href)
 
 # find the href grid indices for these ndfd grids
-idx_href = G_href.grid_points(lons[wfo_impacted],lats[wfo_impacted])
+try:
+    idx_href = G_href.grid_points(lons[wfo_impacted],lats[wfo_impacted])
+except ValueError:
+    import sys
+    print("No severe hazard probabilities. Exiting...")
+    sys.exit(0)
 
 # Get all HREFCT probabilities for all times in each CWA-ST
 ct_vals = []
