@@ -1,6 +1,8 @@
 nsims = 5000
 alpha_hail = 4.7875
 alpha_wind = 4.8324
+zero_pct_hail = 0.95
+zero_pct_wind = 0.82
 
 fipsToState = {
     0:"0",

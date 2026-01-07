@@ -164,20 +164,36 @@ df_otlk.columns = fv.col_names_outlook  # Rename columns to assist merge with HR
 
 # HREF feature processing
 if isTest:
-    ct_files = glob.glob(f'{href_path.as_posix()}/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t00z.hrefct.1hr.f*')
+    ct_files = glob.glob(f'{href_path.as_posix()}/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t12z.hrefct.1hr.f*')
 else:
-    ct_files = glob.glob(f'/nfsops/ops_users/nadata2/awips2/grib2/spcpost/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t00z.hrefct.1hr.f*')
-
-ct_files.sort()
-
-ct_arrs = []
+    ct_files = glob.glob(f'/nfsops/ops_users/nadata2/awips2/grib2/spcpost/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t12z.hrefct.1hr.f*')
 
 if len(ct_files) != 48:
-    import sys
-    print("Some HREF files missing, exiting...")
-    sys.exit(0)
+    print("12Z HREF files incomplete, checking 00Z files...")
+    if isTest:
+        ct_files = glob.glob(f'{href_path.as_posix()}/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t00z.hrefct.1hr.f*')
+    else:
+        ct_files = glob.glob(f'/nfsops/ops_users/nadata2/awips2/grib2/spcpost/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t00z.hrefct.1hr.f*')
+    
+    which_href = 0
+    
+    if len(ct_files) != 48:
+        import sys
+        print("Some 00Z HREF files missing as well, exiting...")
+        sys.exit(0)
+else:
+    which_href = 12
 
-for i,file in enumerate(ct_files[otlkdt.hour-1:35]):
+ct_files.sort()
+ct_arrs = []
+
+# Need to slice appropriate HREF files, based on initialization time
+if which_href == 0:
+    sliced_ct_files = ct_files[otlkdt.hour-1:35]
+else:
+    sliced_ct_files = ct_files[otlkdt.hour-13:23]
+
+for i,file in enumerate(sliced_ct_files):
 
     with pygrib.open(file) as GRB:
         
@@ -251,8 +267,12 @@ if haz_type == 'hail':
 
     nat_preds = df_preds[['hail']].sum()
 
-    # Create distribution with negative binomial
-    nat_hail_dist = np.random.negative_binomial(fv.alpha_hail, fv.alpha_hail/(fv.alpha_hail + nat_preds.values[0]), size=fv.nsims)
+    if nat_preds.values[0] == 0:
+        # Use a simple percentage of sims equaling 1 (from historical data in condint era)
+        nat_hail_dist = np.random.choice([0,1], size=fv.nsims,replace=True, p=[fv.zero_pct_hail, 1-fv.zero_pct_hail])
+    else:
+        # Create distribution with negative binomial
+        nat_hail_dist = np.random.negative_binomial(fv.alpha_hail, fv.alpha_hail/(fv.alpha_hail + nat_preds.values[0]), size=fv.nsims)
 
     # Create weight grids to place reports
     hail_cov[hail_cov < 0] = 0
@@ -329,8 +349,12 @@ elif haz_type == 'wind':
 
     nat_preds = df_preds[['wind']].sum()
 
-    # Create distribution with negative binomial
-    nat_wind_dist = np.random.negative_binomial(fv.alpha_wind, fv.alpha_wind/(fv.alpha_wind + nat_preds.values[0]), size=fv.nsims)
+    if nat_preds.values[0] == 0:
+        # Use a simple percentage of sims equaling 1 (from historical data in condint era)
+        nat_wind_dist = np.random.choice([0,1], size=fv.nsims,replace=True, p=[fv.zero_pct_wind, 1-fv.zero_pct_wind])
+    else:
+        # Create distribution with negative binomial
+        nat_wind_dist = np.random.negative_binomial(fv.alpha_wind, fv.alpha_wind/(fv.alpha_wind + nat_preds.values[0]), size=fv.nsims)
 
     # Create weight grids to place reports
     wind_cov[wind_cov < 0] = 0
