@@ -236,6 +236,8 @@ if haz_type == 'hail':
         import sys
         sys.exit(0)
 
+    prob_holder = hail_cov
+
     hail_preds = np.round(models['hail'].predict(X))
     hail_preds = u.fix_neg(hail_preds)
     
@@ -299,7 +301,10 @@ if haz_type == 'hail':
     group_ids = np.repeat(np.arange(1, len(nat_hail_dist)+1), nat_hail_dist)
 
     hail_df['sim'] = group_ids
-    hail_df['sig'] = hail_df.apply(lambda row: u.return_mag(row.cig, month, row.wfo, 'hail'),axis=1)
+    if hail_df.empty:
+        hail_df['sig'] = None
+    else:
+        hail_df['sig'] = hail_df.apply(lambda row: u.return_mag(row.cig, month, row.wfo, 'hail'),axis=1)
 
     reports_df = hail_df
 
@@ -308,6 +313,8 @@ elif haz_type == 'wind':
         print(f'All wind coverage probabilities less than 5%. No wind predictions made for {otlk_ts}.')
         import sys
         sys.exit(0)
+
+    prob_holder = wind_cov
 
     wind_preds = np.round(models['wind'].predict(X))
     wind_preds = u.fix_neg(wind_preds)
@@ -372,12 +379,24 @@ elif haz_type == 'wind':
     group_ids = np.repeat(np.arange(1, len(nat_wind_dist)+1), nat_wind_dist)
 
     wind_df['sim'] = group_ids
-    wind_df['sig'] = wind_df.apply(lambda row: u.return_mag(row.cig, month, row.wfo, 'wind'),axis=1)
+
+    if wind_df.empty:
+        wind_df['sig'] = None
+    else:
+        wind_df['sig'] = wind_df.apply(lambda row: u.return_mag(row.cig, month, row.wfo, 'wind'),axis=1)
 
     nonsig_lists = []
     sig_lists = []
 
     reports_df = wind_df
+
+# Get affected wfos
+affected_wfos = np.unique(wfo[prob_holder > 0])
+affected_wfos = [s for s in affected_wfos if '0' not in s]
+
+# Get affected states
+affected_states = np.unique(map_func(state[prob_holder > 0]))
+affected_states = [s for s in affected_states if '0' not in s]
 
 outdir = pathlib.Path(out_path,'dates',otlk_ts,'lsr',haz_type).resolve()
 outdir.mkdir(parents=True,exist_ok=True)
@@ -385,4 +404,5 @@ outdir.mkdir(parents=True,exist_ok=True)
 outdir_json = str(outdir).replace('/images/','/jsons/')
 pathlib.Path(outdir_json).mkdir(parents=True,exist_ok=True)
 
-make_plots(reports_df, otlk_ts, outdir, haz_type, only_nat=False)
+make_plots(reports_df, otlk_ts, outdir, haz_type, 
+           affected_wfos, affected_states,only_nat=False)

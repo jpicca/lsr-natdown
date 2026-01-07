@@ -10,7 +10,8 @@ import fipsvars as fv
 import json
 from pdb import set_trace as st
 
-def make_plots(reports_df,otlk_ts,outdir, haz_type, only_nat=False):
+def make_plots(reports_df,otlk_ts,outdir, haz_type, 
+               affected_wfos, affected_states, only_nat=False):
     """
     Function to create plots based on the provided DataFrame.
     Parameters:
@@ -20,8 +21,8 @@ def make_plots(reports_df,otlk_ts,outdir, haz_type, only_nat=False):
     - None: Writes out the plots.
     """
     
-    affected_wfos = reports_df.wfo.unique()
-    affected_states = reports_df.st.unique()
+    # affected_wfos = reports_df.wfo.unique()
+    # affected_states = reports_df.st.unique()
 
     # Dictionary to store all percentile data
     percentile_data = {}
