@@ -90,24 +90,24 @@ def make_images(affected, affected_lists, otlk_ts, outdir, haz_type, percentile_
 
     # Calculate percentiles and store in dictionary
     if percentile_data is not None:
-        reg_percentiles = np.percentile(affected_lists[0], [2.5, 25, 50, 75, 97.5])
-        sig_percentiles = np.percentile(affected_lists[1], [2.5, 25, 50, 75, 97.5])
+        reg_percentiles = np.percentile(affected_lists[0], [10, 25, 50, 75, 90])
+        sig_percentiles = np.percentile(affected_lists[1], [10, 25, 50, 75, 90])
         
         percentile_data[affected] = {
             'percentiles': {
                 'reg': {
-                    'p5': int(reg_percentiles[0]),
+                    'p10': int(reg_percentiles[0]),
                     'p25': int(reg_percentiles[1]),
                     'p50': int(reg_percentiles[2]),
                     'p75': int(reg_percentiles[3]),
-                    'p95': int(reg_percentiles[4])
+                    'p90': int(reg_percentiles[4])
                 },
                 'sig': {
-                    'p5': int(sig_percentiles[0]),
+                    'p10': int(sig_percentiles[0]),
                     'p25': int(sig_percentiles[1]),
                     'p50': int(sig_percentiles[2]),
                     'p75': int(sig_percentiles[3]),
-                    'p95': int(sig_percentiles[4])
+                    'p90': int(sig_percentiles[4])
                 }
             }
         }
@@ -229,7 +229,7 @@ def make_images(affected, affected_lists, otlk_ts, outdir, haz_type, percentile_
     box_list_counts = cbook.boxplot_stats(countsup)
 
     for i in range(0,len(countsup)):
-        box_list_counts[i]['whislo'],box_list_counts[i]['q1'], box_list_counts[i]['q3'], box_list_counts[i]['whishi'] = np.percentile(countsup[i],[2.5,25,75,97.5])
+        box_list_counts[i]['whislo'],box_list_counts[i]['q1'], box_list_counts[i]['q3'], box_list_counts[i]['whishi'] = np.percentile(countsup[i],[10,25,75,90])
 
     box_counts = ax1.bxp(box_list_counts,vert=False,showfliers=False, positions=[0.5,1.5],
                 widths=0.15,showcaps=False,patch_artist=True,
@@ -241,6 +241,21 @@ def make_images(affected, affected_lists, otlk_ts, outdir, haz_type, percentile_
             whisker.set_alpha(0.4)
         else:
             whisker.set_alpha(0.4)
+
+            # Add line from right whisker to max value
+            # idx % 2 == 1 means this is the right whisker
+            whisker_data = whisker.get_xdata()
+            whisker_end = whisker_data[1]  # Right end of whisker
+            y_position = whisker.get_ydata()[0]  # Y position of the whisker
+            
+            # Get max value for this box (idx // 2 gives box index)
+            box_idx = idx // 2
+            max_value = max(box_list_counts[box_idx]['whishi'], 
+                        max(box_list_counts[box_idx].get('fliers', [whisker_end])))
+            
+            # Draw thin line from whisker to max
+            ax1.plot([whisker_end, max_value], [y_position, y_position], 
+                    color='black', linewidth=1, alpha=0.4)
 
     ### **** text for medians on counts ***
     for idx,median in enumerate(box_counts['medians']):
