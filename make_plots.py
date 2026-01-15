@@ -280,7 +280,7 @@ def make_images(affected, affected_lists, otlk_ts, outdir, haz_type, percentile_
     ax1.tick_params(labelsize=14,axis='x')
     ax1.set_xscale('symlog')
     if level == 'national':
-        ax1.set_xlim([0,1100])
+        ax1.set_xlim([0,1300])
         ax1.set_xticks([0,1,5,10,25,50,100,200,500,1000])
         ax1.set_xticklabels(['0','1','5','10','25','50','100','200','500','1k'])
     elif level == 'state':
