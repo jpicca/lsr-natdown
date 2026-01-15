@@ -250,8 +250,11 @@ def make_images(affected, affected_lists, otlk_ts, outdir, haz_type, percentile_
             
             # Get max value for this box (idx // 2 gives box index)
             box_idx = idx // 2
-            max_value = max(box_list_counts[box_idx]['whishi'], 
-                        max(box_list_counts[box_idx].get('fliers', [whisker_end])))
+            fliers = box_list_counts[box_idx].get('fliers', [])
+            if len(fliers) > 0:
+                max_value = max(box_list_counts[box_idx]['whishi'], max(fliers))
+            else:
+                max_value = box_list_counts[box_idx]['whishi']
             
             # Draw thin line from whisker to max
             ax1.plot([whisker_end, max_value], [y_position, y_position], 
