@@ -85,8 +85,14 @@ def make_images(affected, affected_lists, otlk_ts, outdir, haz_type, percentile_
 
     if issue_time.hour < 12:
         valid_time = issue_time.replace(hour=12)
+    elif issue_time.hour < 14:
+        valid_time = issue_time.replace(hour=13)
+    elif issue_time.hour < 18:
+        valid_time = issue_time.replace(hour=16)
+    elif issue_time.hour < 21:
+        valid_time = issue_time.replace(hour=20)
     else:
-        valid_time = issue_time
+        issue_time.replace(hour=12)
 
     # Calculate percentiles and store in dictionary
     if percentile_data is not None:
