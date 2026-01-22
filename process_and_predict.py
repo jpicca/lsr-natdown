@@ -191,7 +191,11 @@ ct_arrs = []
 if which_href == 0:
     sliced_ct_files = ct_files[otlkdt.hour-1:35]
 else:
-    sliced_ct_files = ct_files[otlkdt.hour-13:23]
+    # Quick fix for running archive of 12z outlooks
+    if otlkdt.hour == 12:
+        sliced_ct_files = ct_files[0:23]
+    else:
+        sliced_ct_files = ct_files[otlkdt.hour-13:23]
 
 for i,file in enumerate(sliced_ct_files):
 
