@@ -168,6 +168,7 @@ if isTest:
 else:
     ct_files = glob.glob(f'/nfsops/ops_users/nadata2/awips2/grib2/spcpost/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t12z.hrefct.1hr.f*')
 
+
 if len(ct_files) != 48:
     print("12Z HREF files incomplete, checking 00Z files...")
     if isTest:
