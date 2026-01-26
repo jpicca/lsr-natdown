@@ -27,7 +27,7 @@ parser.add_argument("-out", "--outpath", required=False, default='../web/images/
 parser.add_argument("-ml", "--mlpath", required=False, default='../../ml-data/trained-models/')
 parser.add_argument("-d", "--datapath", required=False, default='../data/')
 parser.add_argument("-hp", "--hrefpath", required=False, default='../test-files/href-calthunder/')
-parser.add_argument("-t", "--test", default=1, type=int, required=False)
+parser.add_argument("-t", "--test", default=0, type=int, required=False)
 parser.add_argument("-ht", "--hazard", required=False, type=str, default='hail')
 
 args = parser.parse_args()
@@ -163,17 +163,17 @@ df_otlk = u.gather_features(wfo_unique, wfo, otlkdt,
 df_otlk.columns = fv.col_names_outlook  # Rename columns to assist merge with HREF features
 
 # HREF feature processing
-if isTest:
-    ct_files = glob.glob(f'{href_path.as_posix()}/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t12z.hrefct.1hr.f*')
-else:
-    ct_files = glob.glob(f'/nfsops/ops_users/nadata2/awips2/grib2/spcpost/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t12z.hrefct.1hr.f*')
+# if isTest:
+ct_files = glob.glob(f'{href_path.as_posix()}/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t12z.hrefct.1hr.f*')
+# else:
+#     ct_files = glob.glob(f'/nfsops/ops_users/nadata2/awips2/grib2/spcpost/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t12z.hrefct.1hr.f*')
 
 if len(ct_files) != 48:
     print("12Z HREF files incomplete, checking 00Z files...")
-    if isTest:
-        ct_files = glob.glob(f'{href_path.as_posix()}/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t00z.hrefct.1hr.f*')
-    else:
-        ct_files = glob.glob(f'/nfsops/ops_users/nadata2/awips2/grib2/spcpost/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t00z.hrefct.1hr.f*')
+    # if isTest:
+    ct_files = glob.glob(f'{href_path.as_posix()}/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t00z.hrefct.1hr.f*')
+    # else:
+    #     ct_files = glob.glob(f'/nfsops/ops_users/nadata2/awips2/grib2/spcpost/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t00z.hrefct.1hr.f*')
     
     which_href = 0
     
@@ -299,7 +299,10 @@ if haz_type == 'hail':
 
     hail_cov_norm = 100*hail_cov / hail_cov.max()
 
-    hail_weight = rel_freq_hail_norm + hail_cov_norm
+    if not isTest:
+        hail_weight = rel_freq_hail_norm + hail_cov_norm
+    else:
+        hail_weight = rel_freq_hail_norm
     hail_weight[hail_cov_norm == 0] = 0
     hail_weight[mask] = 0
 
@@ -381,7 +384,10 @@ elif haz_type == 'wind':
 
     wind_cov_norm = 100*wind_cov / wind_cov.max()
 
-    wind_weight = wind_cov_norm + rel_freq_wind_norm
+    if not isTest:
+        wind_weight = wind_cov_norm + rel_freq_wind_norm
+    else:
+        wind_weight = rel_freq_wind_norm
     wind_weight[wind_cov_norm == 0] = 0
     wind_weight[mask] = 0
 
