@@ -300,9 +300,7 @@ if haz_type == 'hail':
 
     hail_cov_norm = 100*hail_cov / hail_cov.max()
 
-    ### CHANGE BACK WHEN DONE TESTING ###
-    # hail_weight = rel_freq_hail_norm + hail_cov_norm
-    hail_weight = rel_freq_hail_norm
+    hail_weight = rel_freq_hail_norm + hail_cov_norm
     hail_weight[hail_cov_norm == 0] = 0
     hail_weight[mask] = 0
 
@@ -384,9 +382,7 @@ elif haz_type == 'wind':
 
     wind_cov_norm = 100*wind_cov / wind_cov.max()
 
-    ### CHANGE BACK WHEN DONE TESTING ###
-    # wind_weight = wind_cov_norm + rel_freq_wind_norm
-    wind_weight = rel_freq_wind_norm
+    wind_weight = wind_cov_norm + rel_freq_wind_norm
     wind_weight[wind_cov_norm == 0] = 0
     wind_weight[mask] = 0
 
