@@ -277,7 +277,8 @@ if haz_type == 'hail':
         nat_hail_dist = np.random.choice([0,1], size=fv.nsims,replace=True, p=[fv.zero_pct_hail, 1-fv.zero_pct_hail])
     else:
         # Create distribution with negative binomial
-        nat_hail_dist = np.random.negative_binomial(fv.alpha_hail, fv.alpha_hail/(fv.alpha_hail + nat_preds.values[0]), size=fv.nsims)
+        alpha_hail = u.get_alpha(nat_preds.values[0], 'hail')
+        nat_hail_dist = np.random.negative_binomial(alpha_hail, alpha_hail/(alpha_hail + nat_preds.values[0]), size=fv.nsims)
 
     # Create weight grids to place reports
     hail_cov[hail_cov < 0] = 0
@@ -359,7 +360,8 @@ elif haz_type == 'wind':
         nat_wind_dist = np.random.choice([0,1], size=fv.nsims,replace=True, p=[fv.zero_pct_wind, 1-fv.zero_pct_wind])
     else:
         # Create distribution with negative binomial
-        nat_wind_dist = np.random.negative_binomial(fv.alpha_wind, fv.alpha_wind/(fv.alpha_wind + nat_preds.values[0]), size=fv.nsims)
+        alpha_wind = u.get_alpha(nat_preds.values[0], 'wind')
+        nat_wind_dist = np.random.negative_binomial(alpha_wind, alpha_wind/(alpha_wind + nat_preds.values[0]), size=fv.nsims)
 
     # Create weight grids to place reports
     wind_cov[wind_cov < 0] = 0

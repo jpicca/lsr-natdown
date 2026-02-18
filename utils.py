@@ -9,6 +9,21 @@ import fipsvars as fv
 
 from pdb import set_trace as st
 
+def get_alpha(mu, haz='hail'):
+    """ Get alpha parameter for a given mean and hazard type """
+    if haz == 'hail':
+        alpha = 0.058 * (mu ** 1.31)  # power law relationship developed on 2021-24 data
+        alpha = np.clip(alpha, 0.5, 25.0)
+
+    elif haz == 'wind':
+        # empirical data from 2021-24 error data
+        xp = [5, 14.5, 34.5, 74.5, 125]
+        fp = [1.03, 4.62, 3.88, 7.45, 13.83]
+
+        # No need to clip bc values below 5 and above 125 are capped at 1.03 and 13.83, respectively
+        alpha = np.interp(mu, xp, fp)
+
+    return alpha
 
 def fix_neg(arr):
     """ Fix negative values in an array by replacing them with 0"""
