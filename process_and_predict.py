@@ -125,6 +125,19 @@ def read_con_npz_file(npzfile,which='torn'):
 
     return vals
 
+def read_con_grib_file(grbfile,which='torn'):
+    with pygrib.open(grbfile.as_posix().replace('torn',which)) as GRB:
+        try:
+            vals = GRB[1].values.filled(-1)
+        except AttributeError:
+            vals = GRB[1].values
+
+    vals[vals < 1] = 0
+    vals[np.logical_and(vals >= 1, vals < 2)] = 1
+    vals[vals >= 2] = 2
+
+    return vals
+
 # Needed to convert toy_sin and toy_cos back to day of year
 def get_doy(X):
     angle = np.arctan2(X.toy_sin[0],X.toy_cos[0])
@@ -142,10 +155,15 @@ torn_cov = read_ndfd_grib_file(ndfd_file, which='torn')
 hail_cov = read_ndfd_grib_file(ndfd_file, which='hail')
 wind_cov = read_ndfd_grib_file(ndfd_file, which='wind')
 
+# read cig files (grib2)
+torn_con = read_con_grib_file(con_file, which='torn')
+hail_con = read_con_grib_file(con_file, which='hail')
+wind_con = read_con_grib_file(con_file, which='wind')
+
 # read cig files
-torn_con = read_con_npz_file(con_file, which='torn')
-hail_con = read_con_npz_file(con_file, which='hail')
-wind_con = read_con_npz_file(con_file, which='wind')
+# torn_con = read_con_npz_file(con_file, which='torn')
+# hail_con = read_con_npz_file(con_file, which='hail')
+# wind_con = read_con_npz_file(con_file, which='wind')
 
 # get wfo-states in outlooks
 wfo_windoutlook = np.unique(wfo[wind_cov > 0])
