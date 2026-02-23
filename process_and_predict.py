@@ -305,6 +305,9 @@ if haz_type == 'hail':
         alpha_hail = u.get_alpha(nat_preds.values[0]/reduction_factor, 'hail')
         nat_hail_dist = np.random.negative_binomial(alpha_hail, alpha_hail/(alpha_hail + nat_preds.values[0]/reduction_factor), size=fv.nsims)
 
+        nat_hail_dist = nat_hail_dist + fv.hail_bias
+        nat_hail_dist[nat_hail_dist < 0] = 0
+
     # Create weight grids to place reports
     hail_cov[hail_cov < 0] = 0
 
