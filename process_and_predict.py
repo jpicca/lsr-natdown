@@ -41,7 +41,7 @@ href_path = pathlib.Path(args.hrefpath)
 out_path = pathlib.Path(args.outpath)
 haz_type = args.hazard
 
-isTest = bool(args.test)
+isTest = bool(args.test) # Set to True for archive files, False for real time
 
 # Set proper permission structure
 os.umask(0o022)
@@ -276,11 +276,11 @@ if haz_type == 'hail':
         import sys
         sys.exit(0)
 
-    # # Quick fix to reduce hail overestimates in MRGL outlooks
-    # if hail_cov.max() == 5:
-    #     reduction_factor = 2
-    # else:
-    #     reduction_factor = 1
+    # Quick fix to reduce hail overestimates in MRGL outlooks
+    if hail_cov.max() == 5:
+        reduction_factor = 2
+    else:
+        reduction_factor = 1
 
     prob_holder = hail_cov
 
@@ -302,8 +302,8 @@ if haz_type == 'hail':
         nat_hail_dist = np.random.choice([0,1], size=fv.nsims,replace=True, p=[fv.zero_pct_hail, 1-fv.zero_pct_hail])
     else:
         # Create distribution with negative binomial
-        alpha_hail = u.get_alpha(nat_preds.values[0], 'hail')
-        nat_hail_dist = np.random.negative_binomial(alpha_hail, alpha_hail/(alpha_hail + nat_preds.values[0]), size=fv.nsims)
+        alpha_hail = u.get_alpha(nat_preds.values[0]/reduction_factor, 'hail')
+        nat_hail_dist = np.random.negative_binomial(alpha_hail, alpha_hail/(alpha_hail + nat_preds.values[0]/reduction_factor), size=fv.nsims)
 
     # Create weight grids to place reports
     hail_cov[hail_cov < 0] = 0
