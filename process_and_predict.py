@@ -155,15 +155,16 @@ torn_cov = read_ndfd_grib_file(ndfd_file, which='torn')
 hail_cov = read_ndfd_grib_file(ndfd_file, which='hail')
 wind_cov = read_ndfd_grib_file(ndfd_file, which='wind')
 
-# read cig files (grib2)
-torn_con = read_con_grib_file(con_file, which='torn')
-hail_con = read_con_grib_file(con_file, which='hail')
-wind_con = read_con_grib_file(con_file, which='wind')
-
-# read cig files
-# torn_con = read_con_npz_file(con_file, which='torn')
-# hail_con = read_con_npz_file(con_file, which='hail')
-# wind_con = read_con_npz_file(con_file, which='wind')
+if isTest:
+    # read cig files
+    torn_con = read_con_npz_file(con_file, which='torn')
+    hail_con = read_con_npz_file(con_file, which='hail')
+    wind_con = read_con_npz_file(con_file, which='wind')
+else:
+    # read cig files (grib2)
+    torn_con = read_con_grib_file(con_file, which='torn')
+    hail_con = read_con_grib_file(con_file, which='hail')
+    wind_con = read_con_grib_file(con_file, which='wind')
 
 # get wfo-states in outlooks
 wfo_windoutlook = np.unique(wfo[wind_cov > 0])
@@ -274,6 +275,12 @@ if haz_type == 'hail':
         print(f'All hail coverage probabilities less than 5%. No hail predictions made for {otlk_ts}.')
         import sys
         sys.exit(0)
+
+    # # Quick fix to reduce hail overestimates in MRGL outlooks
+    # if hail_cov.max() == 5:
+    #     reduction_factor = 2
+    # else:
+    #     reduction_factor = 1
 
     prob_holder = hail_cov
 
