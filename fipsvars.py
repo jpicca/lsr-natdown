@@ -1,7 +1,7 @@
 nsims = 5000
 alpha_hail = 4.7875
 alpha_wind = 4.8324
-hail_bias = -9 # 2025 bias correction (based on 2025 data)
+hail_bias = -7 # 2025 bias correction (based on 2025 data)
 zero_pct_hail = 0.95
 zero_pct_wind = 0.82
 
