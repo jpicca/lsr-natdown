@@ -1,7 +1,15 @@
 nsims = 5000
 alpha_hail = 4.7875
 alpha_wind = 4.8324
-hail_bias = -7 # 2025 bias correction (based on 2025 data)
+# 2025 bias correction (based on 2025 data)
+def get_hail_bias(pred):
+    if pred < 8:
+        return 0
+    elif pred < 15:
+        return int(-0.6806*pred + 4.7644)
+    else:
+        return int(-0.157*pred - 3.09)
+
 zero_pct_hail = 0.95
 zero_pct_wind = 0.82
 
