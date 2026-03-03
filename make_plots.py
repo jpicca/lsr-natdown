@@ -21,7 +21,7 @@ def load_historic_data(haz_type):
     if haz_type in HISTORIC_DATA:
         return HISTORIC_DATA[haz_type]
 
-    filename = f'/spc/sparch5/devweb/jpicca/lsr-natdown/assets/2015-2024_{haz_type}_with_wfo.csv'
+    filename = f'/spc/spcarch5/devweb/jpicca/lsr-natdown/assets/2015-2024_{haz_type}_with_wfo.csv'
     try:
         df = pd.read_csv(filename)
         # Parse datetime
