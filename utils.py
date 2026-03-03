@@ -13,7 +13,7 @@ def get_alpha(mu, haz='hail'):
     """ Get alpha parameter for a given mean and hazard type """
     if haz == 'hail':
         alpha = 0.058 * (mu ** 1.31)  # power law relationship developed on 2021-24 data
-        alpha = np.clip(alpha, 0.5, 25.0)
+        alpha = np.clip(alpha, 0.5, 15.0)
 
     elif haz == 'wind':
         # empirical data from 2021-24 error data
@@ -24,6 +24,15 @@ def get_alpha(mu, haz='hail'):
         alpha = np.interp(mu, xp, fp)
 
     return alpha
+
+# 2025 bias correction (based on 2025 data)
+def get_hail_bias(pred):
+    if pred < 8:
+        return 0
+    elif pred < 15:
+        return int(-0.6806*pred + 4.7644)
+    else:
+        return int(-0.157*pred - 3.09)
 
 def fix_neg(arr):
     """ Fix negative values in an array by replacing them with 0"""
