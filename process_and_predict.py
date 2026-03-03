@@ -296,18 +296,18 @@ if haz_type == 'hail':
         nat_hail_dist = np.random.choice([0,1], size=fv.nsims,replace=True, p=[fv.zero_pct_hail, 1-fv.zero_pct_hail])
     else:
         # Create distribution with negative binomial
-        # deterministic_prediction = nat_preds.values[0]
-        # bias = fv.get_hail_bias(deterministic_prediction)
+        deterministic_prediction = nat_preds.values[0]
+        bias = fv.get_hail_bias(deterministic_prediction)
 
-        # alpha_hail = u.get_alpha(deterministic_prediction + bias, 'hail')
-        # nat_hail_dist = np.random.negative_binomial(alpha_hail, alpha_hail/(alpha_hail + deterministic_prediction + bias), size=fv.nsims)
-        # nat_hail_dist[nat_hail_dist < 0] = 0
-        
-        alpha_hail = u.get_alpha(nat_preds.values[0], 'hail')
-        nat_hail_dist = np.random.negative_binomial(alpha_hail, alpha_hail/(alpha_hail + nat_preds.values[0]), size=fv.nsims)
-
-        nat_hail_dist = nat_hail_dist + fv.get_hail_bias(nat_preds.values[0])
+        alpha_hail = u.get_alpha(deterministic_prediction + bias, 'hail')
+        nat_hail_dist = np.random.negative_binomial(alpha_hail, alpha_hail/(alpha_hail + deterministic_prediction + bias), size=fv.nsims)
         nat_hail_dist[nat_hail_dist < 0] = 0
+        
+        # alpha_hail = u.get_alpha(nat_preds.values[0], 'hail')
+        # nat_hail_dist = np.random.negative_binomial(alpha_hail, alpha_hail/(alpha_hail + nat_preds.values[0]), size=fv.nsims)
+
+        # nat_hail_dist = nat_hail_dist + fv.get_hail_bias(nat_preds.values[0])
+        # nat_hail_dist[nat_hail_dist < 0] = 0
 
     # Create weight grids to place reports
     hail_cov[hail_cov < 0] = 0
