@@ -155,13 +155,14 @@ torn_cov = read_ndfd_grib_file(ndfd_file, which='torn')
 hail_cov = read_ndfd_grib_file(ndfd_file, which='hail')
 wind_cov = read_ndfd_grib_file(ndfd_file, which='wind')
 
-if isTest:
+try:
     # read cig files
     torn_con = read_con_npz_file(con_file, which='torn')
     hail_con = read_con_npz_file(con_file, which='hail')
     wind_con = read_con_npz_file(con_file, which='wind')
-else:
+except Exception as e:
     # read cig files (grib2)
+    print(f"NPZ read failed, attempting GRIB")
     torn_con = read_con_grib_file(con_file, which='torn')
     hail_con = read_con_grib_file(con_file, which='hail')
     wind_con = read_con_grib_file(con_file, which='wind')
