@@ -299,7 +299,7 @@ if haz_type == 'hail':
 
         # Apply bias correction, then generate distribution
         deterministic_prediction = nat_preds.values[0]
-        bias = fv.get_hail_bias(deterministic_prediction)
+        bias = u.get_hail_bias(deterministic_prediction)
 
         alpha_hail = u.get_alpha(deterministic_prediction + bias, 'hail')
         nat_hail_dist = np.random.negative_binomial(alpha_hail, alpha_hail/(alpha_hail + deterministic_prediction + bias), size=fv.nsims)
