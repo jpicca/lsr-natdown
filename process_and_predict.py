@@ -182,33 +182,75 @@ df_otlk = u.gather_features(wfo_unique, wfo, otlkdt,
                     population)
 df_otlk.columns = fv.col_names_outlook  # Rename columns to assist merge with HREF features
 
-# HREF feature processing
-if isTest:
-    ct_files = glob.glob(f'{href_path.as_posix()}/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t12z.hrefct.1hr.f*')
-else:
-    ct_files = glob.glob(f'/nfsops/ops_users/nadata2/awips2/grib2/spcpost/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t12z.hrefct.1hr.f*')
+# # HREF feature processing
+# if isTest:
+#     ct_files = glob.glob(f'{href_path.as_posix()}/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t12z.hrefct.1hr.f*')
+# else:
+#     ct_files = glob.glob(f'/nfsops/ops_users/nadata2/awips2/grib2/spcpost/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t12z.hrefct.1hr.f*')
 
 
-if len(ct_files) != 48:
-    print("12Z HREF files incomplete, checking 00Z files...")
-    if isTest:
-        ct_files = glob.glob(f'{href_path.as_posix()}/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t00z.hrefct.1hr.f*')
-    else:
-        ct_files = glob.glob(f'/nfsops/ops_users/nadata2/awips2/grib2/spcpost/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t00z.hrefct.1hr.f*')
+# if len(ct_files) != 48:
+#     print("12Z HREF files incomplete, checking 00Z files...")
+#     if isTest:
+#         ct_files = glob.glob(f'{href_path.as_posix()}/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t00z.hrefct.1hr.f*')
+#     else:
+#         ct_files = glob.glob(f'/nfsops/ops_users/nadata2/awips2/grib2/spcpost/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t00z.hrefct.1hr.f*')
     
-    which_href = 0
+#     which_href = 0
     
-    if len(ct_files) != 48:
-        import sys
-        print("Some 00Z HREF files missing as well, exiting...")
-        sys.exit(0)
-else:
-    which_href = 12
+#     if len(ct_files) != 48:
+#         import sys
+#         print("Some 00Z HREF files missing as well, exiting...")
+#         sys.exit(0)
+# else:
+#     which_href = 12
 
+# ct_files.sort()
+# ct_arrs = []
+
+# # Need to slice appropriate HREF files, based on initialization time
+# if which_href == 0:
+#     sliced_ct_files = ct_files[otlkdt.hour-1:35]
+# else:
+#     # Quick fix for running archive of 12z outlooks
+#     if otlkdt.hour == 12:
+#         sliced_ct_files = ct_files[0:23]
+#     else:
+#         sliced_ct_files = ct_files[otlkdt.hour-13:23]
+
+# Define our two potential base directories
+nfs_base = f"/nfsops/ops_users/nadata2/awips2/grib2/spcpost/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder"
+arch_base = f"{href_path.as_posix()}/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder"
+
+# Order of search: Primary (NFS) then Secondary (Test/Backup)
+search_paths = [nfs_base, arch_base]
+ct_files = []
+which_href = None
+
+for base_path in search_paths:
+    # 1. Try 12Z in current directory
+    ct_files = glob.glob(f"{base_path}/spc_post.t12z.hrefct.1hr.f*")
+    if len(ct_files) == 48:
+        which_href = 12
+        break  # Success!
+    
+    # 2. Try 00Z in current directory
+    print(f"12Z files incomplete in {base_path}, checking 00Z...")
+    ct_files = glob.glob(f"{base_path}/spc_post.t00z.hrefct.1hr.f*")
+    if len(ct_files) == 48:
+        which_href = 0
+        break  # Success!
+
+# Exit if neither directory yielded a full set of files
+if which_href is None:
+    print("Could not find a complete set of 48 HREF files in any directory. Exiting...")
+    import sys
+    sys.exit(0)
+
+# Final sorting and slicing
 ct_files.sort()
 ct_arrs = []
 
-# Need to slice appropriate HREF files, based on initialization time
 if which_href == 0:
     sliced_ct_files = ct_files[otlkdt.hour-1:35]
 else:
