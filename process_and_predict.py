@@ -345,6 +345,8 @@ if haz_type == 'hail':
         bias = u.get_hail_bias(deterministic_prediction)
 
         alpha_hail = u.get_alpha(deterministic_prediction + bias, 'hail')
+        if alpha_hail > fv.alpha_hail:
+            alpha_hail = fv.alpha_hail
         nat_hail_dist = np.random.negative_binomial(alpha_hail, alpha_hail/(alpha_hail + deterministic_prediction + bias), size=fv.nsims)
         nat_hail_dist[nat_hail_dist < 0] = 0
         
@@ -436,6 +438,8 @@ elif haz_type == 'wind':
     else:
         # Create distribution with negative binomial
         alpha_wind = u.get_alpha(nat_preds.values[0], 'wind')
+        if alpha_wind > fv.alpha_wind:
+            alpha_wind = fv.alpha_wind
         nat_wind_dist = np.random.negative_binomial(alpha_wind, alpha_wind/(alpha_wind + nat_preds.values[0]), size=fv.nsims)
 
     # Create weight grids to place reports
