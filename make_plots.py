@@ -97,8 +97,12 @@ def get_recurrence_text(haz_type, level, affected, count, is_sig):
 
 # --------------------------------------
 
+# Need to create a function to produce a blank plot with the same formatting as the others, 
+# to use when there are no reports
+# def ...
+
 def make_plots(reports_df,otlk_ts,outdir, haz_type, 
-               affected_wfos, affected_states, only_nat=False):
+               affected_wfos, affected_states, only_nat=False, no_probs=False):
     """
     Function to create plots based on the provided DataFrame.
     """
@@ -125,7 +129,7 @@ def make_plots(reports_df,otlk_ts,outdir, haz_type,
             affected_lists = [affected_reg_dist, affected_sig_dist]
 
             make_images(affected, affected_lists, otlk_ts, 
-                        outdir, haz_type, percentile_data, 'wfo')
+                        outdir, haz_type, percentile_data, 'wfo', no_probs)
 
         # Plot States
         for affected in affected_states:
@@ -141,7 +145,7 @@ def make_plots(reports_df,otlk_ts,outdir, haz_type,
             affected_lists = [affected_reg_dist, affected_sig_dist]
 
             make_images(affected, affected_lists, otlk_ts,
-                        outdir, haz_type, percentile_data, 'state')
+                        outdir, haz_type, percentile_data, 'state', no_probs)
 
     # Plot National
     affected = 'National'
@@ -149,7 +153,7 @@ def make_plots(reports_df,otlk_ts,outdir, haz_type,
     affected_sig_dist = reports_df.groupby('sim').sum()['sig'].reindex(index=np.arange(1,fv.nsims+1,1),fill_value=0).values
     affected_lists = [affected_reg_dist, affected_sig_dist]
 
-    make_images(affected, affected_lists, otlk_ts, outdir, haz_type, percentile_data, 'national')
+    make_images(affected, affected_lists, otlk_ts, outdir, haz_type, percentile_data, 'national', no_probs)
 
     # Write out JSON file
     outdir_json = str(outdir).replace('/images/','/jsons/')
@@ -158,7 +162,7 @@ def make_plots(reports_df,otlk_ts,outdir, haz_type,
     with open(json_filename, 'w') as f:
         json.dump(percentile_data, f, indent=2)
 
-def make_images(affected, affected_lists, otlk_ts, outdir, haz_type, percentile_data=None, level='national'):
+def make_images(affected, affected_lists, otlk_ts, outdir, haz_type, percentile_data=None, level='national', no_probs=False):
 
     issue_time = dt.datetime.strptime(otlk_ts, '%Y%m%d%H%M%S')
     exp_time = (issue_time + dt.timedelta(days=1)).replace(hour=12)
@@ -398,6 +402,13 @@ def make_images(affected, affected_lists, otlk_ts, outdir, haz_type, percentile_
 
     plt.setp(box_counts['boxes'],facecolor='black')
     plt.setp(box_counts['medians'],linewidth=2,color='white')
+
+    # Add overlay text if there are no probabilities
+    if no_probs:
+        ax1.text(0.5, 0.5, f"All coverage probabilities are <5% for {title_haz.lower()}.",
+                 transform=ax1.transAxes, ha='center', va='center',
+                 fontsize=14, weight='bold', color='black',
+                 bbox=dict(facecolor='white', alpha=0.9, edgecolor='black', boxstyle='round,pad=0.5'), zorder=10)
 
     gs.tight_layout(fig)
     fig.savefig(f'{outdir}/{affected}-{otlk_ts}-{haz_type}.png',dpi=150)

@@ -182,42 +182,6 @@ df_otlk = u.gather_features(wfo_unique, wfo, otlkdt,
                     population)
 df_otlk.columns = fv.col_names_outlook  # Rename columns to assist merge with HREF features
 
-# # HREF feature processing
-# if isTest:
-#     ct_files = glob.glob(f'{href_path.as_posix()}/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t12z.hrefct.1hr.f*')
-# else:
-#     ct_files = glob.glob(f'/nfsops/ops_users/nadata2/awips2/grib2/spcpost/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t12z.hrefct.1hr.f*')
-
-
-# if len(ct_files) != 48:
-#     print("12Z HREF files incomplete, checking 00Z files...")
-#     if isTest:
-#         ct_files = glob.glob(f'{href_path.as_posix()}/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t00z.hrefct.1hr.f*')
-#     else:
-#         ct_files = glob.glob(f'/nfsops/ops_users/nadata2/awips2/grib2/spcpost/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder/spc_post.t00z.hrefct.1hr.f*')
-    
-#     which_href = 0
-    
-#     if len(ct_files) != 48:
-#         import sys
-#         print("Some 00Z HREF files missing as well, exiting...")
-#         sys.exit(0)
-# else:
-#     which_href = 12
-
-# ct_files.sort()
-# ct_arrs = []
-
-# # Need to slice appropriate HREF files, based on initialization time
-# if which_href == 0:
-#     sliced_ct_files = ct_files[otlkdt.hour-1:35]
-# else:
-#     # Quick fix for running archive of 12z outlooks
-#     if otlkdt.hour == 12:
-#         sliced_ct_files = ct_files[0:23]
-#     else:
-#         sliced_ct_files = ct_files[otlkdt.hour-13:23]
-
 # Define our two potential base directories
 nfs_base = f"/nfsops/ops_users/nadata2/awips2/grib2/spcpost/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder"
 arch_base = f"{href_path.as_posix()}/{otlkdt.year}{otlkdt.month:02d}{otlkdt.day:02d}/thunder"
@@ -283,30 +247,32 @@ wfo_1d = wfo[wfo_impacted]
 
 G_href = pg.Gridder(lons_href, lats_href)
 
+no_probs = False
+
 # find the href grid indices for these ndfd grids
 try:
     idx_href = G_href.grid_points(lons[wfo_impacted],lats[wfo_impacted])
 except ValueError:
-    import sys
-    print("No severe hazard probabilities. Exiting...")
-    sys.exit(0)
+    print("No severe hazard probabilities. Skipping feature generation to make empty plots.")
+    no_probs = True
 
-# Get all HREFCT probabilities for all times in each CWA-ST
-ct_vals = []
-for idx in idx_href:
-    ct_vals.append(val_stack[:,idx[0],idx[1]])
+if not no_probs:
+    # Get all HREFCT probabilities for all times in each CWA-ST
+    ct_vals = []
+    for idx in idx_href:
+        ct_vals.append(val_stack[:,idx[0],idx[1]])
 
-ct_vals = np.array(ct_vals)
+    ct_vals = np.array(ct_vals)
 
-df_href = u.gather_ct_features(wfo_unique, wfo_1d, otlkdt, ct_vals, population, wfo)
-df_href.columns = fv.col_names_href # Rename columns to assist merge with outlook features
+    df_href = u.gather_ct_features(wfo_unique, wfo_1d, otlkdt, ct_vals, population, wfo)
+    df_href.columns = fv.col_names_href # Rename columns to assist merge with outlook features
 
-df_all = df_otlk.merge(df_href, on=['otlk_timestamp','wfo_list'], how='inner').fillna(0)
+    df_all = df_otlk.merge(df_href, on=['otlk_timestamp','wfo_list'], how='inner').fillna(0)
 
-wfo_list_trans = models['le'].transform(df_all.wfo_list.str.slice(0,3))
-X = df_all.iloc[:,2:]
-X['doy'] = get_doy(X)
-X['wfo'] = wfo_list_trans
+    wfo_list_trans = models['le'].transform(df_all.wfo_list.str.slice(0,3))
+    X = df_all.iloc[:,2:]
+    X['doy'] = get_doy(X)
+    X['wfo'] = wfo_list_trans
 
 mask_wfo = np.char.find(wfo, '0') != -1
 mask_st = state == 0
@@ -314,199 +280,197 @@ mask_st = state == 0
 mask = np.logical_or(mask_wfo, mask_st)
 
 if haz_type == 'hail':
-    if hail_cov.max() == 0:
-        print(f'All hail coverage probabilities less than 5%. No hail predictions made for {otlk_ts}.')
-        import sys
-        sys.exit(0)
-
     prob_holder = hail_cov
-
-    hail_preds = np.round(models['hail'].predict(X))
-    hail_preds = u.fix_neg(hail_preds)
-    
-    df_preds = pd.DataFrame({
-        'wfo': df_all.wfo_list,
-        'hail': hail_preds
-    })
-
-    hail_bool = np.array([int(bool((hail_cov[wfo == place]).sum())) for place in df_preds.wfo])
-    df_preds['hail'] = df_preds['hail']*hail_bool
-
-    nat_preds = df_preds[['hail']].sum()
-
-    if nat_preds.values[0] == 0:
-        # Use a simple percentage of sims equaling 1 (from historical data in condint era)
-        nat_hail_dist = np.random.choice([0,1], size=fv.nsims,replace=True, p=[fv.zero_pct_hail, 1-fv.zero_pct_hail])
-    else:
-        # Create distribution with negative binomial
-
-        # Apply bias correction, then generate distribution
-        deterministic_prediction = nat_preds.values[0]
-        bias = u.get_hail_bias(deterministic_prediction)
-
-        alpha_hail = u.get_alpha(deterministic_prediction + bias, 'hail')
-        if alpha_hail > fv.alpha_hail:
-            alpha_hail = fv.alpha_hail
-        nat_hail_dist = np.random.negative_binomial(alpha_hail, alpha_hail/(alpha_hail + deterministic_prediction + bias), size=fv.nsims)
-        nat_hail_dist[nat_hail_dist < 0] = 0
+    if no_probs or hail_cov.max() == 0:
+        print(f'All hail coverage probabilities less than 5%. Generating empty plots for {otlk_ts}.')
+        reports_df = pd.DataFrame(columns=['cig', 'wfo', 'st', 'sim', 'sig'])
+        no_probs = True
         
-        # Generate distribution, then apply bias correction
-        # alpha_hail = u.get_alpha(nat_preds.values[0], 'hail')
-        # nat_hail_dist = np.random.negative_binomial(alpha_hail, alpha_hail/(alpha_hail + nat_preds.values[0]), size=fv.nsims)
-
-        # nat_hail_dist = nat_hail_dist + u.get_hail_bias(nat_preds.values[0])
-        # nat_hail_dist[nat_hail_dist < 0] = 0
-
-    # Create weight grids to place reports
-    hail_cov[hail_cov < 0] = 0
-
-    # continuous coverage files
-    hail_cov_con = u.make_continuous(hail_cov, haz='hail')
-
-    rel_freq_hail = np.zeros(wfo.shape)
-
-    for _,row in df_preds.iterrows():
-        area = row.wfo
-        hail_pred = row.hail
+    if not no_probs:
+        hail_preds = np.round(models['hail'].predict(X))
+        hail_preds = u.fix_neg(hail_preds)
         
-        rel_freq_hail[wfo == area] = hail_pred
+        df_preds = pd.DataFrame({
+            'wfo': df_all.wfo_list,
+            'hail': hail_preds
+        })
 
-    if rel_freq_hail.max() == 0:
-        rel_freq_hail_norm = rel_freq_hail
-    else:
-        rel_freq_hail_norm = 100*rel_freq_hail / rel_freq_hail.max()
+        hail_bool = np.array([int(bool((hail_cov[wfo == place]).sum())) for place in df_preds.wfo])
+        df_preds['hail'] = df_preds['hail']*hail_bool
 
-    hail_cov_norm = 100*hail_cov / hail_cov.max()
+        nat_preds = df_preds[['hail']].sum()
 
-    hail_weight = rel_freq_hail_norm + hail_cov_norm
-    hail_weight[hail_cov_norm == 0] = 0
-    hail_weight[mask] = 0
+        if nat_preds.values[0] == 0:
+            # Use a simple percentage of sims equaling 1 (from historical data in condint era)
+            nat_hail_dist = np.random.choice([0,1], size=fv.nsims,replace=True, p=[fv.zero_pct_hail, 1-fv.zero_pct_hail])
+        else:
+            # Create distribution with negative binomial
 
-    cumulative_weights_hail = hail_weight.cumsum().astype(int)
-    all_reps_hail_sum = nat_hail_dist.sum()
+            # Apply bias correction, then generate distribution
+            deterministic_prediction = nat_preds.values[0]
+            bias = u.get_hail_bias(deterministic_prediction)
 
-    # Get hail locations and sig count numbers
-    _locs = np.random.randint(
-                0.001, cumulative_weights_hail.max(), size=all_reps_hail_sum)
-    locs = cumulative_weights_hail.searchsorted(_locs)
+            alpha_hail = u.get_alpha(deterministic_prediction + bias, 'hail')
+            if alpha_hail > fv.alpha_hail:
+                alpha_hail = fv.alpha_hail
+            nat_hail_dist = np.random.negative_binomial(alpha_hail, alpha_hail/(alpha_hail + deterministic_prediction + bias), size=fv.nsims)
+            nat_hail_dist[nat_hail_dist < 0] = 0
 
-    con_reports = hail_con.flatten()[locs]
-    wfo_hail = wfo.flatten()[locs]
-    state_hail = state.flatten()[locs]
-    state_hail = np.array([fv.fipsToState[st] for st in state_hail])
+        # Create weight grids to place reports
+        hail_cov[hail_cov < 0] = 0
 
-    all_ratings = []
+        # continuous coverage files
+        hail_cov_con = u.make_continuous(hail_cov, haz='hail')
 
-    hail_df = pd.DataFrame({'cig': con_reports.astype(int), 
-                            'wfo': wfo_hail,
-                            'st': state_hail})
+        rel_freq_hail = np.zeros(wfo.shape)
 
-    group_ids = np.repeat(np.arange(1, len(nat_hail_dist)+1), nat_hail_dist)
+        for _,row in df_preds.iterrows():
+            area = row.wfo
+            hail_pred = row.hail
+            
+            rel_freq_hail[wfo == area] = hail_pred
 
-    hail_df['sim'] = group_ids
-    if hail_df.empty:
-        hail_df['sig'] = None
-    else:
-        hail_df['sig'] = hail_df.apply(lambda row: u.return_mag(row.cig, month, row.wfo, 'hail'),axis=1)
+        if rel_freq_hail.max() == 0:
+            rel_freq_hail_norm = rel_freq_hail
+        else:
+            rel_freq_hail_norm = 100*rel_freq_hail / rel_freq_hail.max()
 
-    reports_df = hail_df
+        hail_cov_norm = 100*hail_cov / hail_cov.max()
+
+        hail_weight = rel_freq_hail_norm + hail_cov_norm
+        hail_weight[hail_cov_norm == 0] = 0
+        hail_weight[mask] = 0
+
+        cumulative_weights_hail = hail_weight.cumsum().astype(int)
+        all_reps_hail_sum = nat_hail_dist.sum()
+
+        # Get hail locations and sig count numbers
+        _locs = np.random.randint(
+                    0.001, cumulative_weights_hail.max(), size=all_reps_hail_sum)
+        locs = cumulative_weights_hail.searchsorted(_locs)
+
+        con_reports = hail_con.flatten()[locs]
+        wfo_hail = wfo.flatten()[locs]
+        state_hail = state.flatten()[locs]
+        state_hail = np.array([fv.fipsToState[st] for st in state_hail])
+
+        all_ratings = []
+
+        hail_df = pd.DataFrame({'cig': con_reports.astype(int), 
+                                'wfo': wfo_hail,
+                                'st': state_hail})
+
+        group_ids = np.repeat(np.arange(1, len(nat_hail_dist)+1), nat_hail_dist)
+
+        hail_df['sim'] = group_ids
+        if hail_df.empty:
+            hail_df['sig'] = None
+        else:
+            hail_df['sig'] = hail_df.apply(lambda row: u.return_mag(row.cig, month, row.wfo, 'hail'),axis=1)
+
+        reports_df = hail_df
 
 elif haz_type == 'wind':  
-    if wind_cov.max() == 0:
-        print(f'All wind coverage probabilities less than 5%. No wind predictions made for {otlk_ts}.')
-        import sys
-        sys.exit(0)
-
     prob_holder = wind_cov
-
-    wind_preds = np.round(models['wind'].predict(X))
-    wind_preds = u.fix_neg(wind_preds)
-
-    df_preds = pd.DataFrame({
-        'wfo': df_all.wfo_list,
-        'wind': wind_preds
-    })
-
-    wind_bool = np.array([int(bool((wind_cov[wfo == place]).sum())) for place in df_preds.wfo])
-    df_preds['wind'] = df_preds['wind']*wind_bool
-
-    nat_preds = df_preds[['wind']].sum()
-
-    if nat_preds.values[0] == 0:
-        # Use a simple percentage of sims equaling 1 (from historical data in condint era)
-        nat_wind_dist = np.random.choice([0,1], size=fv.nsims,replace=True, p=[fv.zero_pct_wind, 1-fv.zero_pct_wind])
-    else:
-        # Create distribution with negative binomial
-        alpha_wind = u.get_alpha(nat_preds.values[0], 'wind')
-        if alpha_wind > fv.alpha_wind:
-            alpha_wind = fv.alpha_wind
-        nat_wind_dist = np.random.negative_binomial(alpha_wind, alpha_wind/(alpha_wind + nat_preds.values[0]), size=fv.nsims)
-
-    # Create weight grids to place reports
-    wind_cov[wind_cov < 0] = 0
-
-    # continuous coverage files
-    wind_cov_con = u.make_continuous(wind_cov, haz='wind')
-
-    rel_freq_wind = np.zeros(wfo.shape)
-
-    for _,row in df_preds.iterrows():
-        area = row.wfo
-        wind_pred = row.wind
+    if no_probs or wind_cov.max() == 0:
+        print(f'All wind coverage probabilities less than 5%. Generating empty plots for {otlk_ts}.')
+        reports_df = pd.DataFrame(columns=['cig', 'wfo', 'st', 'sim', 'sig'])
+        no_probs = True
         
-        rel_freq_wind[wfo == area] = wind_pred
+    if not no_probs:
+        wind_preds = np.round(models['wind'].predict(X))
+        wind_preds = u.fix_neg(wind_preds)
 
-    if rel_freq_wind.max() == 0:
-        rel_freq_wind_norm = rel_freq_wind
-    else:
-        rel_freq_wind_norm = 100*rel_freq_wind / rel_freq_wind.max()
+        df_preds = pd.DataFrame({
+            'wfo': df_all.wfo_list,
+            'wind': wind_preds
+        })
 
-    wind_cov_norm = 100*wind_cov / wind_cov.max()
+        wind_bool = np.array([int(bool((wind_cov[wfo == place]).sum())) for place in df_preds.wfo])
+        df_preds['wind'] = df_preds['wind']*wind_bool
 
-    wind_weight = wind_cov_norm + rel_freq_wind_norm
-    wind_weight[wind_cov_norm == 0] = 0
-    wind_weight[mask] = 0
+        nat_preds = df_preds[['wind']].sum()
 
-    cumulative_weights_wind = wind_weight.cumsum().astype(int)
-    all_reps_wind_sum = nat_wind_dist.sum()
+        if nat_preds.values[0] == 0:
+            # Use a simple percentage of sims equaling 1 (from historical data in condint era)
+            nat_wind_dist = np.random.choice([0,1], size=fv.nsims,replace=True, p=[fv.zero_pct_wind, 1-fv.zero_pct_wind])
+        else:
+            # Create distribution with negative binomial
+            alpha_wind = u.get_alpha(nat_preds.values[0], 'wind')
+            if alpha_wind > fv.alpha_wind:
+                alpha_wind = fv.alpha_wind
+            nat_wind_dist = np.random.negative_binomial(alpha_wind, alpha_wind/(alpha_wind + nat_preds.values[0]), size=fv.nsims)
 
-    # Get wind locations and sig count numbers
-    _locs = np.random.randint(
-                0.001, cumulative_weights_wind.max(), size=all_reps_wind_sum)
-    locs = cumulative_weights_wind.searchsorted(_locs)
+        # Create weight grids to place reports
+        wind_cov[wind_cov < 0] = 0
 
-    con_reports = wind_con.flatten()[locs]
-    wfo_wind = wfo.flatten()[locs]
-    state_wind = state.flatten()[locs]
-    state_wind = np.array([fv.fipsToState[st] for st in state_wind])
+        # continuous coverage files
+        wind_cov_con = u.make_continuous(wind_cov, haz='wind')
 
-    all_ratings = []
+        rel_freq_wind = np.zeros(wfo.shape)
 
-    wind_df = pd.DataFrame({'cig': con_reports.astype(int), 
-                            'wfo': wfo_wind,
-                            'st': state_wind})
+        for _,row in df_preds.iterrows():
+            area = row.wfo
+            wind_pred = row.wind
+            
+            rel_freq_wind[wfo == area] = wind_pred
 
-    group_ids = np.repeat(np.arange(1, len(nat_wind_dist)+1), nat_wind_dist)
+        if rel_freq_wind.max() == 0:
+            rel_freq_wind_norm = rel_freq_wind
+        else:
+            rel_freq_wind_norm = 100*rel_freq_wind / rel_freq_wind.max()
 
-    wind_df['sim'] = group_ids
+        wind_cov_norm = 100*wind_cov / wind_cov.max()
 
-    if wind_df.empty:
-        wind_df['sig'] = None
-    else:
-        wind_df['sig'] = wind_df.apply(lambda row: u.return_mag(row.cig, month, row.wfo, 'wind'),axis=1)
+        wind_weight = wind_cov_norm + rel_freq_wind_norm
+        wind_weight[wind_cov_norm == 0] = 0
+        wind_weight[mask] = 0
 
-    nonsig_lists = []
-    sig_lists = []
+        cumulative_weights_wind = wind_weight.cumsum().astype(int)
+        all_reps_wind_sum = nat_wind_dist.sum()
 
-    reports_df = wind_df
+        # Get wind locations and sig count numbers
+        _locs = np.random.randint(
+                    0.001, cumulative_weights_wind.max(), size=all_reps_wind_sum)
+        locs = cumulative_weights_wind.searchsorted(_locs)
 
-# Get affected wfos
-affected_wfos = np.unique(wfo[prob_holder > 0])
-affected_wfos = [s for s in affected_wfos if '0' not in s]
+        con_reports = wind_con.flatten()[locs]
+        wfo_wind = wfo.flatten()[locs]
+        state_wind = state.flatten()[locs]
+        state_wind = np.array([fv.fipsToState[st] for st in state_wind])
 
-# Get affected states
-affected_states = np.unique(map_func(state[prob_holder > 0]))
-affected_states = [s for s in affected_states if '0' not in s]
+        all_ratings = []
+
+        wind_df = pd.DataFrame({'cig': con_reports.astype(int), 
+                                'wfo': wfo_wind,
+                                'st': state_wind})
+
+        group_ids = np.repeat(np.arange(1, len(nat_wind_dist)+1), nat_wind_dist)
+
+        wind_df['sim'] = group_ids
+
+        if wind_df.empty:
+            wind_df['sig'] = None
+        else:
+            wind_df['sig'] = wind_df.apply(lambda row: u.return_mag(row.cig, month, row.wfo, 'wind'),axis=1)
+
+        nonsig_lists = []
+        sig_lists = []
+
+        reports_df = wind_df
+
+# Get affected wfos and states
+if no_probs:
+    affected_wfos = []
+    affected_states = []
+else:
+    # Get affected wfos
+    affected_wfos = np.unique(wfo[prob_holder > 0])
+    affected_wfos = [s for s in affected_wfos if '0' not in s]
+
+    # Get affected states
+    affected_states = np.unique(map_func(state[prob_holder > 0]))
+    affected_states = [s for s in affected_states if '0' not in s]
 
 outdir = pathlib.Path(out_path,'dates',otlk_ts,'lsr',haz_type).resolve()
 outdir.mkdir(parents=True,exist_ok=True)
@@ -515,4 +479,4 @@ outdir_json = str(outdir).replace('/images/','/jsons/')
 pathlib.Path(outdir_json).mkdir(parents=True,exist_ok=True)
 
 make_plots(reports_df, otlk_ts, outdir, haz_type, 
-           affected_wfos, affected_states,only_nat=False)
+           affected_wfos, affected_states, only_nat=False, no_probs=no_probs)
